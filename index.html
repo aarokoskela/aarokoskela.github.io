@@ -816,6 +816,15 @@
                 border-bottom-color: #4ade80;
                 background: rgba(74,222,128,0.08);
             }
+
+            /* Tab bar: scroll horizontally on mobile */
+            .tabs {
+                overflow-x: auto;
+                scrollbar-width: none;
+                padding: 0 8px;
+            }
+            .tabs::-webkit-scrollbar { display: none; }
+            .tab-btn { padding: 11px 14px; }
         }
 
         @media (max-width: 520px) {
@@ -827,10 +836,14 @@
             .league-header-text h1 { font-size: 1.1em; }
             .tl-event { grid-template-columns: 1fr 48px 1fr; font-size: 0.74em; }
             .fpl-row { grid-template-columns: 30px 1fr 32px 22px 22px 22px 22px 22px 30px; font-size: 0.7em; }
+            /* Pitch: tighter on very small screens */
+            .pitch-player { min-width: 28px; max-width: 38px; }
+            .pitch-dot { width: 22px; height: 22px; font-size: 0.55em; }
+            .pitch-pname { font-size: 0.47em; max-width: 34px; }
         }
 
         /* ── Lineup Pitch ── */
-        .lineup-pitch { font-size: 0.88em; }
+        .lineup-pitch { font-size: 0.88em; overflow-x: auto; }
 
         .pitch-team-strip {
             display: flex;
@@ -860,9 +873,10 @@
         .pitch-field {
             background: linear-gradient(180deg, #276a35 0%, #2d7a3d 40%, #2d7a3d 60%, #276a35 100%);
             border-radius: 10px;
-            overflow: hidden;
+            overflow: visible;
             position: relative;
             padding: 10px 4px;
+            min-width: min-content;
         }
 
         .pitch-field::before {
@@ -1593,11 +1607,16 @@ function parseFormationRows(roster) {
         (a.formationSequence ?? a.formationPlace ?? 99) -
         (b.formationSequence ?? b.formationPlace ?? 99)
     );
+    // ESPN sometimes orders GK last (attack→defense); detect and reverse
+    const firstGrp = getSoccerGroup(starters[0].athlete?.position?.abbreviation);
+    const lastGrp  = getSoccerGroup(starters[starters.length - 1].athlete?.position?.abbreviation);
+    if (lastGrp === 0 && firstGrp !== 0) starters.reverse();
+
     const fmtn  = roster.formation || '';
     const parts = fmtn.split('-').map(Number).filter(n => n > 0);
     const total = parts.reduce((s, n) => s + n, 0);
     if (parts.length >= 2 && total === starters.length - 1) {
-        const rows = [[starters[0]]];
+        const rows = [[starters[0]]]; // GK row
         let idx = 1;
         for (const count of parts) {
             rows.push(starters.slice(idx, idx + count));
@@ -2051,10 +2070,12 @@ function renderSoccerStandings(el, entries, league) {
     el.innerHTML = `
         <p class="section-info">Kausi 2025–26</p>
         <div class="match-card" style="padding:0;overflow:hidden;border-radius:16px">
-            <table class="standings-table">
-                <thead><tr><th>#</th><th style="text-align:left">Joukkue</th>${thCells}</tr></thead>
-                <tbody>${rows}</tbody>
-            </table>
+            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+                <table class="standings-table">
+                    <thead><tr><th>#</th><th style="text-align:left">Joukkue</th>${thCells}</tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
         </div>
         <div class="standings-legend">${legendHTML}</div>`;
 }
@@ -2094,10 +2115,12 @@ function renderHockeyStandings(el, data, league) {
             const { rows } = standingsTableHTML(entries, cols, 'hockey');
 
             html += `<div class="match-card" style="padding:0;overflow:hidden;margin-bottom:12px">
-                <table class="standings-table">
-                    <thead><tr><th>#</th><th style="text-align:left">Joukkue</th>${thCells}</tr></thead>
-                    <tbody>${rows}</tbody>
-                </table>
+                <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+                    <table class="standings-table">
+                        <thead><tr><th>#</th><th style="text-align:left">Joukkue</th>${thCells}</tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
             </div>`;
         }
     }
