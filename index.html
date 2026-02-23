@@ -36,165 +36,206 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ── App Layout ── */
-        .app-layout { display: flex; min-height: 100vh; }
-
-        /* ── Sidebar ── */
-        .sidebar {
-            width: 218px;
-            flex-shrink: 0;
-            background: linear-gradient(180deg, #07344f 0%, #0c4a6e 40%, #0d5280 100%);
+        /* ── Top bar ── */
+        .topbar {
             position: sticky;
             top: 0;
-            height: 100vh;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,0.08) transparent;
-            border-right: 1px solid rgba(14,165,233,0.12);
-            box-shadow: 2px 0 24px rgba(0,0,0,0.18);
-        }
-
-        .sidebar-title {
-            padding: 20px 18px 16px;
-            font-size: 0.95em;
-            font-weight: 800;
-            color: #fff;
-            letter-spacing: 0.5px;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
+            z-index: 100;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(0,0,0,0.07);
+            box-shadow: 0 1px 18px rgba(0,0,0,0.06);
+            height: 52px;
             display: flex;
             align-items: center;
-            gap: 9px;
         }
 
-        .sidebar-section { padding-top: 8px; padding-bottom: 4px; }
-
-        .sidebar-section-label {
-            font-size: 0.6em;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: rgba(56,189,248,0.6);
-            padding: 14px 18px 4px;
-            font-weight: 700;
-        }
-
-        .league-btn {
-            display: flex;
-            align-items: center;
-            gap: 9px;
+        .topbar-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 22px;
             width: 100%;
-            background: transparent;
-            border: none;
-            border-left: 3px solid transparent;
-            text-align: left;
-            color: rgba(255,255,255,0.45);
-            padding: 9px 16px 9px 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .topbar-brand {
+            font-weight: 800;
+            font-size: 1em;
+            color: var(--text);
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .topbar-icon { font-size: 1.15em; line-height: 1; }
+
+        /* ── League Nav ── */
+        .league-nav {
+            position: sticky;
+            top: 52px;
+            z-index: 99;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.07);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .league-nav::-webkit-scrollbar { display: none; }
+
+        .league-nav-inner {
+            display: flex;
+            align-items: center;
+            padding: 10px 22px;
+            gap: 6px;
+            width: max-content;
+            min-width: 100%;
+        }
+
+        .lnav-label {
+            font-size: 0.58em;
+            text-transform: uppercase;
+            letter-spacing: 1.8px;
+            color: var(--muted);
+            font-weight: 700;
+            padding-right: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .lnav-sep {
+            width: 1px;
+            height: 32px;
+            background: rgba(0,0,0,0.1);
+            margin: 0 10px;
+            flex-shrink: 0;
+        }
+
+        /* ── League buttons (chip style) ── */
+        .league-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 14px;
+            background: rgba(0,0,0,0.04);
+            border: 1.5px solid transparent;
+            border-radius: 40px;
             cursor: pointer;
-            font-size: 0.83em;
-            font-weight: 500;
             font-family: inherit;
-            transition: background 0.18s, color 0.18s, border-color 0.18s;
-            letter-spacing: 0.1px;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: var(--muted);
+            white-space: nowrap;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            line-height: 1;
         }
 
         .league-btn:hover {
-            background: rgba(255,255,255,0.07);
-            color: rgba(255,255,255,0.88);
+            background: rgba(14,165,233,0.09);
+            color: var(--accent);
+            border-color: rgba(14,165,233,0.2);
         }
 
         .league-btn.active {
-            background: rgba(14,165,233,0.14);
+            background: linear-gradient(135deg, #0c4a6e, #0ea5e9);
             color: #fff;
-            font-weight: 700;
-            border-left-color: #38bdf8;
+            border-color: transparent;
+            box-shadow: 0 3px 12px rgba(14,165,233,0.35);
         }
 
-        .lb-icon { font-size: 0.9em; flex-shrink: 0; line-height: 1; }
+        .lc-logo {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
 
-        /* ── Main content ── */
-        .main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-
-        /* ── League header ── */
-        .league-header {
-            background: linear-gradient(135deg, #083756 0%, #0c4a6e 35%, #0369a1 70%, #0284c7 100%);
-            padding: 20px 28px 16px;
+        /* ── League identity strip ── */
+        .league-identity {
+            max-width: 900px;
+            margin: 30px auto 0;
+            padding: 0 22px;
             display: flex;
             align-items: center;
-            gap: 16px;
-            box-shadow: 0 4px 28px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.05) inset;
-            position: relative;
-            z-index: 1;
+            gap: 18px;
         }
 
-        .league-logo-wrap {
-            width: 52px; height: 52px;
-            background: rgba(255,255,255,0.12);
-            border-radius: 16px;
+        .li-logo-wrap {
+            width: 60px;
+            height: 60px;
+            background: #fff;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 4px 22px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.06);
             flex-shrink: 0;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.18);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
 
-        .league-logo-wrap img {
-            width: 36px; height: 36px;
+        .li-logo-wrap img {
+            width: 42px;
+            height: 42px;
             object-fit: contain;
         }
 
-        .league-header-text h1 {
-            font-size: 1.35em;
-            color: #fff;
+        .li-text h1 {
+            font-size: 1.5em;
             font-weight: 800;
-            line-height: 1.2;
-            letter-spacing: -0.3px;
+            color: var(--text);
+            letter-spacing: -0.5px;
+            line-height: 1.15;
         }
 
-        .league-header-text p {
+        .li-text p {
             font-size: 0.76em;
-            color: rgba(255,255,255,0.6);
-            margin-top: 3px;
+            color: var(--muted);
+            margin-top: 4px;
             font-weight: 400;
         }
 
         /* ── Tabs ── */
         .tabs {
+            max-width: 900px;
+            margin: 22px auto 0;
+            padding: 0 22px;
             display: flex;
-            gap: 0;
-            padding: 0 28px;
-            background: linear-gradient(135deg, #083756 0%, #0c4a6e 35%, #0369a1 70%, #0284c7 100%);
-            border-top: 1px solid rgba(255,255,255,0.06);
+            border-bottom: 1.5px solid rgba(0,0,0,0.07);
         }
 
         .tab-btn {
             background: transparent;
             border: none;
-            border-bottom: 3px solid transparent;
-            color: rgba(255,255,255,0.5);
-            padding: 13px 20px;
+            border-bottom: 2.5px solid transparent;
+            margin-bottom: -1.5px;
+            color: var(--muted);
+            padding: 11px 20px;
             cursor: pointer;
-            font-size: 0.83em;
+            font-size: 0.84em;
             font-weight: 500;
             font-family: inherit;
             transition: color 0.2s, border-color 0.2s;
             white-space: nowrap;
-            letter-spacing: 0.1px;
+            letter-spacing: 0.05px;
         }
 
-        .tab-btn:hover { color: rgba(255,255,255,0.9); }
+        .tab-btn:hover { color: var(--text); }
 
         .tab-btn.active {
-            color: #fff;
-            border-bottom-color: #7dd3fc;
+            color: var(--accent);
+            border-bottom-color: var(--accent);
             font-weight: 700;
         }
 
         /* ── Container ── */
         .container {
-            max-width: 840px;
-            margin: 28px auto;
-            padding: 0 20px;
+            max-width: 900px;
+            margin: 24px auto;
+            padding: 0 22px;
             width: 100%;
         }
 
@@ -872,56 +913,16 @@
 
         /* ── Mobile ── */
         @media (max-width: 768px) {
-            .app-layout { flex-direction: column; }
-
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: static;
-                display: flex;
-                flex-direction: row;
-                overflow-x: auto;
-                padding: 0;
-                scrollbar-width: none;
-            }
-
-            .sidebar::-webkit-scrollbar { display: none; }
-            .sidebar-title { display: none; }
-
-            .sidebar-section {
-                display: flex;
-                flex-direction: row;
-                padding: 0;
-                flex-shrink: 0;
-            }
-
-            .sidebar-section-label { display: none; }
-
-            .league-btn {
-                display: inline-flex;
-                width: auto;
-                white-space: nowrap;
-                padding: 11px 13px;
-                border-left: none;
-                border-bottom: 3px solid transparent;
-                flex-shrink: 0;
-                font-size: 0.8em;
-            }
-
-            .league-btn.active {
-                border-left-color: transparent;
-                border-bottom-color: #38bdf8;
-                background: rgba(56,189,248,0.1);
-            }
-
-            /* Tab bar: scroll horizontally on mobile */
-            .tabs {
-                overflow-x: auto;
-                scrollbar-width: none;
-                padding: 0 8px;
-            }
+            .topbar-inner { padding: 0 14px; }
+            .league-nav-inner { padding: 8px 14px; }
+            .league-identity { margin: 16px auto 0; padding: 0 14px; }
+            .li-logo-wrap { width: 46px; height: 46px; border-radius: 14px; }
+            .li-logo-wrap img { width: 32px; height: 32px; }
+            .li-text h1 { font-size: 1.2em; }
+            .tabs { padding: 0 8px; overflow-x: auto; scrollbar-width: none; margin-top: 14px; }
             .tabs::-webkit-scrollbar { display: none; }
-            .tab-btn { padding: 11px 14px; }
+            .tab-btn { padding: 10px 12px; font-size: 0.8em; }
+            .container { margin: 16px auto; padding: 0 12px; }
         }
 
         @media (max-width: 520px) {
@@ -930,7 +931,7 @@
             .team-name { font-size: 0.76em; }
             .score { font-size: 1.6em; }
             .score-pill { min-width: 72px; padding: 8px 12px; }
-            .league-header-text h1 { font-size: 1.1em; }
+            .li-text h1 { font-size: 1.1em; }
             .tl-event { grid-template-columns: 1fr 48px 1fr; font-size: 0.74em; }
             .fpl-row { grid-template-columns: 30px 1fr 32px 22px 22px 22px 22px 22px 30px; font-size: 0.7em; }
             /* Pitch: tighter on very small screens */
@@ -1077,83 +1078,91 @@
 </head>
 <body>
 
-<div class="app-layout">
+<!-- ── Top bar ── -->
+<header class="topbar">
+    <div class="topbar-inner">
+        <span class="topbar-brand"><span class="topbar-icon">🏆</span>Tulospalvelu</span>
+    </div>
+</header>
 
-    <!-- ── Sidebar ── -->
-    <aside class="sidebar">
-        <div class="sidebar-title">🏆 Tulospalvelu</div>
+<!-- ── League nav ── -->
+<nav class="league-nav">
+    <div class="league-nav-inner">
+        <span class="lnav-label">Jalkapallo</span>
+        <button class="league-btn active" data-league="pl" onclick="switchLeague('pl')">
+            <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/23.png" class="lc-logo" alt="">
+            Premier League
+        </button>
+        <button class="league-btn" data-league="laliga" onclick="switchLeague('laliga')">
+            <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/15.png" class="lc-logo" alt="">
+            La Liga
+        </button>
+        <button class="league-btn" data-league="bl" onclick="switchLeague('bl')">
+            <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/10.png" class="lc-logo" alt="">
+            Bundesliga
+        </button>
+        <button class="league-btn" data-league="seriea" onclick="switchLeague('seriea')">
+            <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/12.png" class="lc-logo" alt="">
+            Serie A
+        </button>
+        <button class="league-btn" data-league="ligue1" onclick="switchLeague('ligue1')">
+            <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/9.png" class="lc-logo" alt="">
+            Ligue 1
+        </button>
+        <button class="league-btn" data-league="ucl" onclick="switchLeague('ucl')">
+            <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/2.png" class="lc-logo" alt="">
+            Champions League
+        </button>
+        <div class="lnav-sep"></div>
+        <span class="lnav-label">Jääkiekko</span>
+        <button class="league-btn" data-league="nhl" onclick="switchLeague('nhl')">
+            <img src="https://a.espncdn.com/i/leaguelogos/hockey/500/1.png" class="lc-logo" alt="">
+            NHL
+        </button>
+        <button class="league-btn" data-league="liiga" onclick="switchLeague('liiga')">
+            <span style="font-size:1.1em;line-height:1">🏒</span>
+            Liiga
+        </button>
+    </div>
+</nav>
 
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">⚽ Jalkapallo</div>
-            <button class="league-btn active" data-league="pl" onclick="switchLeague('pl')">
-                <span class="lb-icon">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span> Premier League
-            </button>
-            <button class="league-btn" data-league="laliga" onclick="switchLeague('laliga')">
-                <span class="lb-icon">🇪🇸</span> La Liga
-            </button>
-            <button class="league-btn" data-league="bl" onclick="switchLeague('bl')">
-                <span class="lb-icon">🇩🇪</span> Bundesliga
-            </button>
-            <button class="league-btn" data-league="seriea" onclick="switchLeague('seriea')">
-                <span class="lb-icon">🇮🇹</span> Serie A
-            </button>
-            <button class="league-btn" data-league="ligue1" onclick="switchLeague('ligue1')">
-                <span class="lb-icon">🇫🇷</span> Ligue 1
-            </button>
-            <button class="league-btn" data-league="ucl" onclick="switchLeague('ucl')">
-                <span class="lb-icon">⭐</span> Champions League
-            </button>
+<!-- ── Page content ── -->
+<div class="page-content">
+
+    <!-- League identity -->
+    <div class="league-identity">
+        <div class="li-logo-wrap">
+            <img id="league-logo"
+                 src="https://a.espncdn.com/i/leaguelogos/soccer/500/23.png"
+                 alt="League" onerror="this.style.display='none'">
         </div>
-
-        <div class="sidebar-section">
-            <div class="sidebar-section-label">🏒 Jääkiekko</div>
-            <button class="league-btn" data-league="nhl" onclick="switchLeague('nhl')">
-                <span class="lb-icon">🏒</span> NHL
-            </button>
-            <button class="league-btn" data-league="liiga" onclick="switchLeague('liiga')">
-                <span class="lb-icon">🏒</span> Liiga
-            </button>
+        <div class="li-text">
+            <h1 id="league-name">Premier League</h1>
+            <p id="league-subtitle">Englannin Valioliiga &mdash; Ottelutulokset &amp; ohjelma</p>
         </div>
-    </aside>
+    </div>
 
-    <!-- ── Main content ── -->
-    <div class="main-content">
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="results"   onclick="showTab('results',   this)">Viimeisimmät tulokset</button>
+        <button class="tab-btn"        data-tab="upcoming"  onclick="showTab('upcoming',  this)">Tulevat ottelut</button>
+        <button class="tab-btn"        data-tab="standings" onclick="showTab('standings', this)">Sarjataulukko</button>
+    </div>
 
-        <!-- League header -->
-        <div class="league-header">
-            <div class="league-logo-wrap">
-                <img id="league-logo"
-                     src="https://a.espncdn.com/i/leaguelogos/soccer/500/23.png"
-                     alt="League" onerror="this.style.display='none'">
-            </div>
-            <div class="league-header-text">
-                <h1 id="league-name">Premier League</h1>
-                <p id="league-subtitle">Englannin Valioliiga &mdash; Ottelutulokset &amp; ohjelma</p>
-            </div>
+    <!-- Tab content -->
+    <div class="container">
+        <div id="results"   class="tab-content active">
+            <div class="loading"><div class="spinner"></div>Ladataan tuloksia...</div>
         </div>
-
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="results"   onclick="showTab('results',   this)">Viimeisimmät tulokset</button>
-            <button class="tab-btn"        data-tab="upcoming"  onclick="showTab('upcoming',  this)">Tulevat ottelut</button>
-            <button class="tab-btn"        data-tab="standings" onclick="showTab('standings', this)">Sarjataulukko</button>
+        <div id="upcoming"  class="tab-content">
+            <div class="loading"><div class="spinner"></div>Ladataan otteluohjelmaa...</div>
         </div>
-
-        <!-- Tab content -->
-        <div class="container">
-            <div id="results"   class="tab-content active">
-                <div class="loading"><div class="spinner"></div>Ladataan tuloksia...</div>
-            </div>
-            <div id="upcoming"  class="tab-content">
-                <div class="loading"><div class="spinner"></div>Ladataan otteluohjelmaa...</div>
-            </div>
-            <div id="standings" class="tab-content">
-                <div class="loading"><div class="spinner"></div>Ladataan sarjataulukkoa...</div>
-            </div>
+        <div id="standings" class="tab-content">
+            <div class="loading"><div class="spinner"></div>Ladataan sarjataulukkoa...</div>
         </div>
+    </div>
 
-    </div><!-- /main-content -->
-</div><!-- /app-layout -->
+</div><!-- /page-content -->
 
 <script>
 'use strict';
