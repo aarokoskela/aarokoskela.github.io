@@ -801,6 +801,17 @@
 
         .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 
+        /* ── Player stats tab ── */
+        .ps-section { margin-bottom: 22px; }
+        .ps-section-title {
+            font-size: 0.78em; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--muted); margin: 0 0 8px 4px;
+        }
+        .ps-player { display: block; font-weight: 600; }
+        .ps-team   { display: block; font-size: 0.76em; color: var(--muted); }
+        .ps-val    { font-weight: 800; color: var(--accent); min-width: 30px; }
+        .ps-apps   { color: var(--muted); }
+
         /* ── Team stats panel ── */
         .st-row { cursor: pointer; }
         .st-row:hover td { background: #e0f2fe !important; }
@@ -1146,7 +1157,8 @@
     <div class="tabs">
         <button class="tab-btn active" data-tab="results"   onclick="showTab('results',   this)">Viimeisimmät tulokset</button>
         <button class="tab-btn"        data-tab="upcoming"  onclick="showTab('upcoming',  this)">Tulevat ottelut</button>
-        <button class="tab-btn"        data-tab="standings" onclick="showTab('standings', this)">Sarjataulukko</button>
+        <button class="tab-btn"        data-tab="standings"   onclick="showTab('standings',   this)">Sarjataulukko</button>
+        <button class="tab-btn"        data-tab="playerstats" onclick="showTab('playerstats', this)">Pelaajatilastot</button>
     </div>
 
     <!-- Tab content -->
@@ -1159,6 +1171,9 @@
         </div>
         <div id="standings" class="tab-content">
             <div class="loading"><div class="spinner"></div>Ladataan sarjataulukkoa...</div>
+        </div>
+        <div id="playerstats" class="tab-content">
+            <div class="loading"><div class="spinner"></div>Ladataan tilastoja...</div>
         </div>
     </div>
 
@@ -1205,9 +1220,9 @@ const LEAGUES = {
         logo:'https://a.espncdn.com/i/leaguelogos/hockey/500/1.png'
     },
     liiga: {
-        key:'liiga', sport:'hockey', id: null,
+        key:'liiga', sport:'hockey', id:'liiga',
         name:'Liiga', subtitle:'Suomen SM-Liiga \u2014 Ottelutulokset & ohjelma',
-        logo:'', unavailable: true
+        logo:'', isLiiga: true
     },
 };
 
@@ -1305,9 +1320,10 @@ function showTab(tab, btn) {
 
 function loadTabContent(tab, league) {
     switch (tab) {
-        case 'results':   loadResults(league);   break;
-        case 'upcoming':  loadUpcoming(league);  break;
-        case 'standings': loadStandings(league); break;
+        case 'results':     loadResults(league);     break;
+        case 'upcoming':    loadUpcoming(league);    break;
+        case 'standings':   loadStandings(league);   break;
+        case 'playerstats': loadPlayerStats(league); break;
     }
 }
 
@@ -1354,9 +1370,14 @@ function switchLeague(leagueKey) {
     document.getElementById('results').classList.add('active');
 
     const LOADING = '<div class="loading"><div class="spinner"></div>Ladataan...</div>';
-    document.getElementById('results').innerHTML   = LOADING;
-    document.getElementById('upcoming').innerHTML  = LOADING;
-    document.getElementById('standings').innerHTML = LOADING;
+    document.getElementById('results').innerHTML     = LOADING;
+    document.getElementById('upcoming').innerHTML    = LOADING;
+    document.getElementById('standings').innerHTML   = LOADING;
+    document.getElementById('playerstats').innerHTML = LOADING;
+
+    // Show/hide player stats tab based on sport
+    const psTabBtn = document.querySelector('[data-tab="playerstats"]');
+    psTabBtn.style.display = league.sport === 'soccer' ? '' : 'none';
 
     if (league.unavailable) {
         const msg = unavailableHTML();
@@ -1386,6 +1407,19 @@ const HOCKEY_ICONS = {
     'goal':'🏒','penalty':'⛔','penalty-shot':'🏒','shootout-goal':'🏒','goalie-change':'🥅',
 };
 
+// Normalise an ESPN event type to a lowercase slug.
+// Soccer keyEvents: type = { type:'goal', text:'Goal' }
+// NHL plays:        type = { id:'505', text:'Goal', abbreviation:'goal' }  (no .type field!)
+function espnEventType(e) {
+    const t = e.type;
+    if (!t) return '';
+    if (typeof t === 'string') return t;
+    if (t.type) return t.type;
+    // NHL plays use abbreviation; soccer falls back to text
+    const raw = t.abbreviation || t.text || '';
+    return raw.toLowerCase().trim().replace(/\s+/g, '-');
+}
+
 function buildTimeline(keyEvents, homeTeamId, sport) {
     const isHockey = sport === 'hockey';
     const SHOW = isHockey
@@ -1393,7 +1427,15 @@ function buildTimeline(keyEvents, homeTeamId, sport) {
         : new Set(['goal','own-goal','yellow-card','red-card','yellow-red-card','substitution','penalty-goal','missed-penalty']);
     const ICONS = isHockey ? HOCKEY_ICONS : SOCCER_ICONS;
 
-    const events = keyEvents.filter(e => SHOW.has(e.type?.type));
+    const events = keyEvents.filter(e => {
+        const type = espnEventType(e);
+        if (SHOW.has(type)) return true;
+        // All scoring plays regardless of sport/type string
+        if (e.scoringPlay) return true;
+        // NHL plays: penalties identified by penaltyMinutes field
+        if (isHockey && e.type?.penaltyMinutes) return true;
+        return false;
+    });
     if (!events.length) return '<div class="no-events">Ei kirjattuja tapahtumia</div>';
 
     let html = '<div class="timeline">';
@@ -1401,9 +1443,12 @@ function buildTimeline(keyEvents, homeTeamId, sport) {
 
     for (const e of events) {
         const period = e.period?.number ?? 0;
-        const type   = e.type.type;
+        const type   = espnEventType(e);
         const min    = e.clock?.displayValue || '';
-        const icon   = ICONS[type] || '•';
+        const isNHLPenalty = isHockey && !e.scoringPlay && e.type?.penaltyMinutes;
+        const icon   = isNHLPenalty ? '⛔'
+                     : ICONS[type]
+                     || (e.scoringPlay ? (isHockey ? '🏒' : '⚽') : '•');
         const isHome = e.team?.id === homeTeamId;
         const parts  = e.participants || [];
 
@@ -1411,7 +1456,9 @@ function buildTimeline(keyEvents, homeTeamId, sport) {
             curPeriod = period;
             let lbl;
             if (isHockey) {
-                lbl = period <= 3 ? `${period}. erä` : 'Jatkoaika / Voittolaukauskilpailu';
+                lbl = period === 4 ? 'Jatkoaika'
+                    : period >= 5  ? 'Voittolaukauskilpailu'
+                    : period > 0   ? `${period}. erä` : '';
             } else {
                 lbl = period === 1 ? '1. puoliaika'
                     : period === 2 ? '2. puoliaika'
@@ -1426,12 +1473,21 @@ function buildTimeline(keyEvents, homeTeamId, sport) {
             const pOff = parts[1]?.athlete?.displayName ?? '';
             content = `<div class="tl-player">▲ ${pOn}</div>
                        ${pOff ? `<div class="tl-sub-detail">▼ ${pOff}</div>` : ''}`;
+        } else if (isNHLPenalty) {
+            const player   = parts[0]?.athlete?.displayName ?? '';
+            const penName  = e.type?.text || '';
+            const penMins  = e.type?.penaltyMinutes || '';
+            content = `<div class="tl-player">${player}</div>
+                       <div class="tl-assist">${penName}${penMins ? ' ('+penMins+' min)' : ''}</div>`;
         } else {
-            const scorer   = parts[0]?.athlete?.displayName ?? '';
-            const assister = parts[1]?.athlete?.displayName ?? '';
-            const showA = assister && ['goal','penalty-goal','shootout-goal'].includes(type);
+            // Find scorer and assisters (NHL plays mark them by type field)
+            const scorer   = (parts.find(p => p.type === 'scorer') ?? parts[0])?.athlete?.displayName ?? '';
+            const a1       = (parts.find(p => p.type === 'assister') ?? parts[1])?.athlete?.displayName ?? '';
+            const a2       = parts.filter(p => p.type === 'assister')[1]?.athlete?.displayName ?? '';
+            const showA = (a1 || a2) && (['goal','penalty-goal','shootout-goal'].includes(type) || e.scoringPlay);
+            const assistStr = [a1, a2].filter(Boolean).join(', ');
             content = `<div class="tl-player">${scorer}</div>
-                       ${showA ? `<div class="tl-assist">↳ ${assister}</div>` : ''}`;
+                       ${showA && assistStr ? `<div class="tl-assist">↳ ${assistStr}</div>` : ''}`;
         }
 
         html += `<div class="tl-event">
@@ -1513,6 +1569,7 @@ function buildStats(bsTeams, homeTeam, awayTeam, sport) {
 }
 
 async function loadMatchStats(panel, eventId, homeTeam, awayTeam, league) {
+    if (league.isLiiga) { return loadLiigaMatchStats(panel, eventId); }
     const content = panel.querySelector('.stats-content');
     content.innerHTML = '<div class="spinner-sm"></div>';
     try {
@@ -1524,7 +1581,9 @@ async function loadMatchStats(panel, eventId, homeTeam, awayTeam, league) {
         const data      = detailCache[eventId];
         const sport     = league.sport;
         const tlIcon    = sport === 'hockey' ? '🏒' : '⚽';
-        const tlHTML    = buildTimeline(data.keyEvents || [], homeTeam.id, sport);
+        // NHL has no keyEvents — use plays instead; soccer uses keyEvents
+        const evArr = (data.keyEvents?.length) ? data.keyEvents : (data.plays || []);
+        const tlHTML    = buildTimeline(evArr, homeTeam.id, sport);
         const statsHTML = buildStats(data.boxscore?.teams || [], homeTeam, awayTeam, sport);
 
         content.innerHTML = `
@@ -1810,6 +1869,11 @@ function buildSimpleLineup(homeRoster, awayRoster, homeTeam, awayTeam) {
 }
 
 async function loadLineups(div, eventId, league, homeTeam, awayTeam) {
+    if (league.isLiiga) {
+        div.innerHTML = '<div class="no-events">Kokoonpanotietoja ei saatavilla</div>';
+        div.dataset.loaded = '1';
+        return;
+    }
     div.innerHTML = '<div class="spinner-sm"></div>';
     try {
         if (!detailCache[eventId]) {
@@ -2163,6 +2227,7 @@ function attachTeamStatsHandlers(el, league) {
 
 async function loadStandings(league) {
     const el = document.getElementById('standings');
+    if (league.isLiiga) { return loadLiigaStandings(league); }
     if (league.unavailable) { el.innerHTML = unavailableHTML(); return; }
 
     try {
@@ -2361,9 +2426,14 @@ function startLiveRefresh(league) {
 }
 
 async function refreshResults(league) {
-    if (!league || league.unavailable) { stopLiveRefresh(); return; }
-    // Only refresh if still on same league
+    if (!league || (league.unavailable && !league.isLiiga)) { stopLiveRefresh(); return; }
     if (league.key !== currentLeagueKey) { stopLiveRefresh(); return; }
+
+    if (league.isLiiga) {
+        await fetchLiigaGames(liigaCurrentSeason(), true);
+        await loadLiigaResults(league);
+        return;
+    }
 
     try {
         const to = new Date(), from = new Date();
@@ -2378,8 +2448,304 @@ async function refreshResults(league) {
     } catch {}
 }
 
+// ── Player stats ──────────────────────────────────────────────────────────
+function playerStatsUrl(league) {
+    return `https://site.api.espn.com/apis/site/v2/sports/soccer/${league.id}/statistics`;
+}
+
+function getStat(athlete, name) {
+    const s = (athlete.statistics || []).find(s => s.name === name);
+    return s ? Number(s.value) : 0;
+}
+
+function buildPlayerTable(leaders, mainStat, mainLabel, limit) {
+    const rows = leaders.slice(0, limit).map((l, i) => {
+        const a    = l.athlete;
+        const team = a.team?.displayName || '';
+        const apps = getStat(a, 'appearances');
+        const val  = getStat(a, mainStat);
+        return `<tr>
+            <td class="st-rank">${i + 1}</td>
+            <td style="text-align:left">
+                <span class="ps-player">${a.displayName}</span>
+                <span class="ps-team">${team}</span>
+            </td>
+            <td class="ps-apps">${apps}</td>
+            <td class="ps-val">${val}</td>
+        </tr>`;
+    }).join('');
+
+    return `<div class="match-card" style="padding:0;overflow:hidden;border-radius:16px">
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+            <table class="standings-table">
+                <thead><tr>
+                    <th>#</th>
+                    <th style="text-align:left">Pelaaja</th>
+                    <th title="Ottelut pelattu">P</th>
+                    <th>${mainLabel}</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>
+    </div>`;
+}
+
+function renderPlayerStats(el, data) {
+    const goalsCat   = data.stats?.find(s => s.name === 'goalsLeaders');
+    const assistsCat = data.stats?.find(s => s.name === 'assistsLeaders');
+
+    if (!goalsCat && !assistsCat) {
+        el.innerHTML = '<div class="error-msg">Tilastoja ei saatavilla</div>';
+        return;
+    }
+
+    // Build G+A leaders by merging both lists
+    const seen = new Map();
+    for (const l of [...(goalsCat?.leaders || []), ...(assistsCat?.leaders || [])]) {
+        if (!seen.has(l.athlete.id)) seen.set(l.athlete.id, l);
+    }
+    const gaLeaders = [...seen.values()].sort((a, b) => {
+        const gaA = getStat(a.athlete, 'totalGoals') + getStat(a.athlete, 'goalAssists');
+        const gaB = getStat(b.athlete, 'totalGoals') + getStat(b.athlete, 'goalAssists');
+        return gaB - gaA || getStat(b.athlete, 'totalGoals') - getStat(a.athlete, 'totalGoals');
+    }).map(l => ({
+        athlete: {
+            ...l.athlete,
+            statistics: [
+                ...(l.athlete.statistics || []),
+                { name: 'ga', value: getStat(l.athlete, 'totalGoals') + getStat(l.athlete, 'goalAssists') },
+            ]
+        }
+    }));
+
+    el.innerHTML = `
+        <p class="section-info">Kauden parhaat pelaajat</p>
+        <div class="ps-section">
+            <div class="ps-section-title">⚽ Maalintekijät</div>
+            ${buildPlayerTable(goalsCat?.leaders || [], 'totalGoals', 'M', 10)}
+        </div>
+        <div class="ps-section">
+            <div class="ps-section-title">🎯 Syöttäjät</div>
+            ${buildPlayerTable(assistsCat?.leaders || [], 'goalAssists', 'S', 10)}
+        </div>
+        <div class="ps-section">
+            <div class="ps-section-title">📊 Pistepörssi (M+S)</div>
+            ${buildPlayerTable(gaLeaders, 'ga', 'M+S', 10)}
+        </div>`;
+}
+
+async function loadPlayerStats(league) {
+    const el = document.getElementById('playerstats');
+    if (league.sport !== 'soccer') {
+        el.innerHTML = '<div class="no-events">Pelaajatilastot saatavilla vain jalkapallosarjoille.</div>';
+        return;
+    }
+    try {
+        const res = await fetch(playerStatsUrl(league));
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        renderPlayerStats(el, await res.json());
+    } catch (err) {
+        el.innerHTML = `<div class="error-msg">Virhe tilastojen lataamisessa: ${err.message}</div>`;
+    }
+}
+
+// ── Liiga API ─────────────────────────────────────────────────────────────
+function liigaCurrentSeason() {
+    const now = new Date();
+    // Season labeled by year it ends; new season starts in August
+    return now.getMonth() >= 7 ? now.getFullYear() + 1 : now.getFullYear();
+}
+
+const liigaGamesCache = {}; // season → { data: [], ts: timestamp }
+const liigaGameById   = {}; // gameId → raw game object
+
+async function fetchLiigaGames(season, force) {
+    const cached = liigaGamesCache[season];
+    if (cached && !force && (Date.now() - cached.ts < 55000)) return cached.data;
+    const res = await fetch(`https://www.liiga.fi/api/v2/games?season=${season}&gameType=runkosarja`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    liigaGamesCache[season] = { data, ts: Date.now() };
+    for (const g of data) liigaGameById[String(g.id)] = g;
+    return data;
+}
+
+const LIIGA_GOAL_TYPE = { YV:'YV', AV:'AV', VL:'VL', RL:'RL' };
+
+function liigaToESPN(game) {
+    const home = game.homeTeam;
+    const away = game.awayTeam;
+    if (!home.teamName || !away.teamName) return null;
+
+    let state, shortDetail, displayClock;
+    if (game.ended) {
+        state = 'post';
+        const ft = game.finishedType;
+        shortDetail = ft === 'ENDED_DURING_OVERTIME' ? 'JA'
+                    : ft === 'ENDED_DURING_SHOOTOUT'  ? 'VL'
+                    : 'Lopputulos';
+        displayClock = '';
+    } else if (game.started) {
+        state = 'in';
+        shortDetail = `${game.currentPeriod}. erä`;
+        displayClock = `${game.currentPeriod}. erä`;
+    } else {
+        state = 'pre';
+        shortDetail = '';
+        displayClock = '';
+    }
+
+    return {
+        id: String(game.id),
+        date: game.start,
+        competitions: [{
+            competitors: [
+                { homeAway:'home', team:{ id: home.teamId, displayName: home.teamName,
+                    shortDisplayName: home.teamName, logo: home.logos?.darkBg || '' },
+                  score: String(home.goals ?? 0) },
+                { homeAway:'away', team:{ id: away.teamId, displayName: away.teamName,
+                    shortDisplayName: away.teamName, logo: away.logos?.darkBg || '' },
+                  score: String(away.goals ?? 0) }
+            ],
+            status: { type: { state, shortDetail, detail: shortDetail, displayClock } },
+            venue: game.iceRink ? { fullName: game.iceRink.name } : null
+        }]
+    };
+}
+
+async function loadLiigaMatchStats(panel, gameId) {
+    const content = panel.querySelector('.stats-content');
+    content.innerHTML = '<div class="spinner-sm"></div>';
+    try {
+        const game = liigaGameById[String(gameId)];
+        if (!game) throw new Error('Pelin tietoja ei löydy');
+
+        const allGoals = [];
+        for (const ge of (game.homeTeam.goalEvents || [])) allGoals.push({ ...ge, isHome: true });
+        for (const ge of (game.awayTeam.goalEvents || [])) allGoals.push({ ...ge, isHome: false });
+        allGoals.sort((a, b) => (a.period - b.period) || (a.gameTime - b.gameTime));
+
+        let tlHTML = '<div class="timeline">';
+        let curPeriod = null;
+        for (const ge of allGoals) {
+            if (ge.period !== curPeriod) {
+                curPeriod = ge.period;
+                const lbl = ge.period <= 3 ? `${ge.period}. erä` : 'Jatkoaika / VL';
+                tlHTML += `<div class="tl-period">${lbl}</div>`;
+            }
+            const mins    = Math.floor(ge.gameTime / 60);
+            const secs    = String(ge.gameTime % 60).padStart(2, '0');
+            const timeStr = `${mins}:${secs}`;
+            const types   = (ge.goalTypes || []).join(', ');
+            const scorer  = ge.scorerPlayer
+                ? `${ge.scorerPlayer.firstName} ${ge.scorerPlayer.lastName}${types ? ' (' + types + ')' : ''}`
+                : '?';
+            const assists = (ge.assistantPlayers || []).map(a => `${a.firstName} ${a.lastName}`).join(', ');
+            const score   = `${ge.homeTeamScore}–${ge.awayTeamScore}`;
+            const cellHTML = `<div class="tl-player">${scorer}</div>
+                ${assists ? `<div class="tl-assist">↳ ${assists}</div>` : ''}`;
+            tlHTML += `<div class="tl-event">
+                <div class="tl-home">${ge.isHome  ? cellHTML : ''}</div>
+                <div class="tl-center"><span class="tl-icon">🏒</span><span class="tl-min">${timeStr} (${score})</span></div>
+                <div class="tl-away">${!ge.isHome ? cellHTML : ''}</div>
+            </div>`;
+        }
+        if (!allGoals.length) tlHTML += '<div class="no-events">Ei maaleja kirjattu</div>';
+        tlHTML += '</div>';
+
+        content.innerHTML = `<div class="details-section">
+            <div class="details-title">🏒 Maalit</div>${tlHTML}</div>`;
+        panel.dataset.loaded = '1';
+    } catch (err) {
+        content.innerHTML = `<div class="details-error">Virhe: ${err.message}</div>`;
+    }
+}
+
+async function loadLiigaResults(league) {
+    const el = document.getElementById('results');
+    try {
+        const season = liigaCurrentSeason();
+        const games  = await fetchLiigaGames(season);
+        const cutoff = new Date(Date.now() - 35 * 864e5);
+        const recent = games.filter(g => g.homeTeam.teamName &&
+            (g.ended || g.started) && new Date(g.start) >= cutoff);
+        const live     = recent.filter(g => g.started && !g.ended);
+        const finished = recent.filter(g => g.ended);
+        renderResultsWithLive([...live, ...finished].map(liigaToESPN).filter(Boolean),
+            live.length > 0, league);
+        if (live.length > 0) startLiveRefresh(league);
+    } catch (err) {
+        el.innerHTML = `<div class="error-msg">Virhe: ${err.message}</div>`;
+    }
+}
+
+async function loadLiigaUpcoming(league) {
+    const el = document.getElementById('upcoming');
+    try {
+        const season  = liigaCurrentSeason();
+        const games   = await fetchLiigaGames(season);
+        const cutoff  = new Date(Date.now() + 35 * 864e5);
+        const upcoming = games.filter(g => g.homeTeam.teamName &&
+            !g.started && !g.ended && new Date(g.start) <= cutoff);
+        renderEvents(upcoming.map(liigaToESPN).filter(Boolean), 'upcoming', true, league);
+    } catch (err) {
+        el.innerHTML = `<div class="error-msg">Virhe: ${err.message}</div>`;
+    }
+}
+
+async function loadLiigaStandings(league) {
+    const el = document.getElementById('standings');
+    try {
+        const season = liigaCurrentSeason();
+        const url    = `${FPL_PROXY}${encodeURIComponent(`https://www.liiga.fi/api/v2/standings?season=${season}&gameType=runkosarja`)}`;
+        const res    = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data   = await res.json();
+        const teams  = (data.season || []).slice().sort((a, b) => a.ranking - b.ranking);
+
+        let rows = '';
+        for (const t of teams) {
+            const logo    = t.teamLogos?.darkBg || '';
+            const otWins  = t.overtimeWins  || 0;
+            const otLosses= t.overtimeLosses|| 0;
+            const regWins = (t.wins   || 0) - otWins;
+            const regLoss = (t.losses || 0) - otLosses;
+            const gd      = (t.goals || 0) - (t.goalsAgainst || 0);
+            const gdStr   = gd >= 0 ? '+' + gd : String(gd);
+            const gdColor = gd > 0 ? '#0369a1' : gd < 0 ? '#dc2626' : '';
+            rows += `<tr class="st-row" data-team-id="${t.teamId}" data-team-name="${t.teamName}" data-team-logo="${logo}">
+                <td class="st-rank">${t.ranking}</td>
+                <td><div class="st-team">
+                    <img src="${logo}" alt="${t.teamName}" onerror="this.style.visibility='hidden'">
+                    <span>${t.teamName}</span>
+                </div></td>
+                <td>${t.games}</td><td>${regWins}</td><td>${otWins}</td>
+                <td>${otLosses}</td><td>${regLoss}</td>
+                <td class="st-gd" style="color:${gdColor}">${gdStr}</td>
+                <td class="st-pts">${t.points}</td>
+            </tr>`;
+        }
+        const sy = season - 1, ey = String(season).slice(2);
+        el.innerHTML = `<p class="section-info">Runkosarja ${sy}–${ey}</p>
+            <div class="match-card" style="padding:0;overflow:hidden;border-radius:16px">
+                <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+                    <table class="standings-table">
+                        <thead><tr><th>#</th><th style="text-align:left">Joukkue</th>
+                        <th>P</th><th title="Voitot">V</th><th title="Jatkoaikavoitot">JV</th>
+                        <th title="Jatkoaikahäviöt">JH</th><th title="Häviöt">H</th>
+                        <th>ME</th><th class="st-pts">Pts</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            </div>`;
+    } catch (err) {
+        el.innerHTML = `<div class="error-msg">Virhe sarjataulukon lataamisessa: ${err.message}</div>`;
+    }
+}
+
 // ── Load functions ─────────────────────────────────────────────────────────
 async function loadResults(league) {
+    if (league.isLiiga) { return loadLiigaResults(league); }
     const el = document.getElementById('results');
     try {
         const to = new Date(), from = new Date();
@@ -2397,6 +2763,7 @@ async function loadResults(league) {
 }
 
 async function loadUpcoming(league) {
+    if (league.isLiiga) { return loadLiigaUpcoming(league); }
     const el = document.getElementById('upcoming');
     try {
         const from = new Date(), to = new Date();
