@@ -934,14 +934,38 @@
             .tabs::-webkit-scrollbar { display: none; }
             .tab-btn { padding: 10px 12px; font-size: 0.8em; }
             .container { margin: 16px auto; padding: 0 12px; }
+
+            /* Compact match cards on mobile */
+            .match-card {
+                padding: 8px 12px;
+                margin-bottom: 2px;
+                border-radius: 14px;
+            }
+            .match-meta {
+                font-size: 0.65em;
+                margin-bottom: 5px;
+            }
+            .match-teams { gap: 4px; }
+            .team {
+                flex-direction: row;
+                gap: 6px;
+                align-items: center;
+            }
+            .match-teams .team:last-child { flex-direction: row-reverse; }
+            .match-teams .team:last-child .team-name { text-align: right; }
+            .team-logo { width: 32px; height: 32px; border-radius: 50%; }
+            .team-logo img { width: 20px; height: 20px; }
+            .team-name { font-size: 0.72em; text-align: left; }
+            .score-block { min-width: 76px; }
+            .score-pill { padding: 5px 10px; min-width: 68px; }
+            .score { font-size: 1.3em; letter-spacing: 2px; }
+            .score-detail { font-size: 0.6em; margin-top: 2px; }
+            .upcoming-block { padding: 5px 10px; min-width: 68px; }
+            .upcoming-time { font-size: 1.1em; }
+            .upcoming-vs { font-size: 0.66em; margin-top: 1px; }
         }
 
         @media (max-width: 520px) {
-            .team-logo { width: 46px; height: 46px; }
-            .team-logo img { width: 30px; height: 30px; }
-            .team-name { font-size: 0.76em; }
-            .score { font-size: 1.6em; }
-            .score-pill { min-width: 72px; padding: 8px 12px; }
             .li-text h1 { font-size: 1.1em; }
             .tl-event { grid-template-columns: 1fr 48px 1fr; font-size: 0.74em; }
             .fpl-row { grid-template-columns: 30px 1fr 32px 22px 22px 22px 22px 22px 30px; font-size: 0.7em; }
