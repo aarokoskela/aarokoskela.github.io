@@ -72,29 +72,6 @@
 
         .topbar-icon { font-size: 1.15em; line-height: 1; }
 
-        /* ── League Nav ── */
-        .league-nav {
-            position: sticky;
-            top: 52px;
-            z-index: 99;
-            background: rgba(255,255,255,0.96);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(0,0,0,0.07);
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-        .league-nav::-webkit-scrollbar { display: none; }
-
-        .league-nav-inner {
-            display: flex;
-            align-items: center;
-            padding: 10px 22px;
-            gap: 6px;
-            width: max-content;
-            min-width: 100%;
-        }
-
         .lnav-label {
             font-size: 0.58em;
             text-transform: uppercase;
@@ -152,50 +129,6 @@
             height: 20px;
             object-fit: contain;
             flex-shrink: 0;
-        }
-
-        /* ── League identity strip ── */
-        .league-identity {
-            max-width: 900px;
-            margin: 30px auto 0;
-            padding: 0 22px;
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-
-        .li-logo-wrap {
-            width: 60px;
-            height: 60px;
-            background: #fff;
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 22px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
-            border: 1px solid rgba(0,0,0,0.06);
-            flex-shrink: 0;
-        }
-
-        .li-logo-wrap img {
-            width: 42px;
-            height: 42px;
-            object-fit: contain;
-        }
-
-        .li-text h1 {
-            font-size: 1.5em;
-            font-weight: 800;
-            color: var(--text);
-            letter-spacing: -0.5px;
-            line-height: 1.15;
-        }
-
-        .li-text p {
-            font-size: 0.76em;
-            color: var(--muted);
-            margin-top: 4px;
-            font-weight: 400;
         }
 
         /* ── Tabs ── */
@@ -305,8 +238,8 @@
             background: rgba(255,255,255,0.92);
             border: 1px solid rgba(14,165,233,0.09);
             border-radius: 22px;
-            padding: 20px 22px;
-            margin-bottom: 12px;
+            padding: 13px 20px;
+            margin-bottom: 10px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 6px 18px rgba(0,0,0,0.055);
             backdrop-filter: blur(12px);
             transition: box-shadow 0.25s, transform 0.22s, border-color 0.25s;
@@ -332,7 +265,7 @@
             align-items: center;
             font-size: 0.72em;
             color: var(--muted);
-            margin-bottom: 14px;
+            margin-bottom: 10px;
             gap: 8px;
             font-weight: 500;
         }
@@ -370,7 +303,7 @@
         }
 
         .team-logo {
-            width: 60px; height: 60px;
+            width: 48px; height: 48px;
             background: linear-gradient(145deg, #f8fcff, #e4f1fb);
             border-radius: 50%;
             display: flex;
@@ -382,7 +315,7 @@
         }
 
         .team-logo img {
-            width: 38px; height: 38px;
+            width: 28px; height: 28px;
             object-fit: contain;
         }
 
@@ -397,20 +330,20 @@
         .score-block {
             flex-shrink: 0;
             text-align: center;
-            min-width: 96px;
+            min-width: 82px;
         }
 
         .score-pill {
             background: linear-gradient(145deg, #083756, #0c4a6e 40%, #0ea5e9);
-            border-radius: 20px;
-            padding: 12px 22px;
+            border-radius: 18px;
+            padding: 9px 18px;
             display: inline-block;
-            box-shadow: 0 6px 24px rgba(14,165,233,0.38), 0 2px 6px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.13);
-            min-width: 90px;
+            box-shadow: 0 4px 18px rgba(14,165,233,0.35), 0 2px 6px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.13);
+            min-width: 76px;
         }
 
         .score {
-            font-size: 1.95em;
+            font-size: 1.65em;
             font-weight: 900;
             color: #fff;
             letter-spacing: 4px;
@@ -421,22 +354,22 @@
         .score-detail {
             font-size: 0.68em;
             color: rgba(255,255,255,0.6);
-            margin-top: 4px;
+            margin-top: 3px;
             font-weight: 500;
         }
 
         .upcoming-block {
             background: rgba(14,165,233,0.07);
             border: 1.5px solid rgba(14,165,233,0.22);
-            border-radius: 20px;
-            padding: 12px 22px;
+            border-radius: 18px;
+            padding: 9px 18px;
             display: inline-block;
-            min-width: 90px;
+            min-width: 76px;
             box-shadow: 0 2px 8px rgba(14,165,233,0.1), inset 0 1px 2px rgba(255,255,255,0.8);
         }
 
         .upcoming-time {
-            font-size: 1.55em;
+            font-size: 1.3em;
             font-weight: 800;
             color: var(--accent);
             letter-spacing: -0.5px;
@@ -493,11 +426,11 @@
         /* ── Stats panel ── */
         .detail-panel {
             display: none;
-            margin-top: 20px;
-            padding: 18px;
-            border-top: 1px solid rgba(14,165,233,0.1);
-            background: rgba(240,249,255,0.7);
-            backdrop-filter: blur(8px);
+            margin-top: 14px;
+            padding: 16px 18px;
+            border-top: 1px solid rgba(14,165,233,0.08);
+            background: linear-gradient(160deg, rgba(240,249,255,0.85), rgba(248,252,255,0.9));
+            backdrop-filter: blur(10px);
             border-radius: 0 0 18px 18px;
             animation: fadeDown 0.2s ease;
         }
@@ -526,33 +459,87 @@
         .details-title.fpl-title { color: var(--fpl-color); border-bottom-color: #ede9fe; }
 
         /* ── Timeline ── */
-        .timeline { display: flex; flex-direction: column; gap: 2px; }
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            position: relative;
+            padding: 4px 0;
+        }
+
+        /* Vertical center line */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0; bottom: 0;
+            width: 1.5px;
+            background: linear-gradient(to bottom,
+                transparent,
+                rgba(14,165,233,0.15) 8%,
+                rgba(14,165,233,0.15) 92%,
+                transparent);
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
 
         .tl-event {
             display: grid;
-            grid-template-columns: 1fr 54px 1fr;
-            gap: 6px;
+            grid-template-columns: 1fr 44px 1fr;
+            gap: 0;
             align-items: center;
             font-size: 0.8em;
-            padding: 5px 4px;
+            padding: 4px 0;
             border-radius: 8px;
+            transition: background 0.14s;
         }
 
-        .tl-event:hover { background: rgba(14,165,233,0.07); border-radius: 8px; }
+        .tl-event:hover { background: rgba(14,165,233,0.06); }
+
+        .tl-event.tl-score .tl-dot {
+            box-shadow: 0 0 0 3px rgba(14,165,233,0.12), 0 1px 5px rgba(0,0,0,0.09);
+            border-color: rgba(14,165,233,0.45);
+        }
 
         .tl-home, .tl-away { display: flex; flex-direction: column; gap: 1px; }
-        .tl-home { text-align: right; align-items: flex-end; }
-        .tl-away { text-align: left; align-items: flex-start; }
+        .tl-home { text-align: right; align-items: flex-end; padding-right: 10px; }
+        .tl-away { text-align: left; align-items: flex-start; padding-left: 10px; }
 
-        .tl-center { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .tl-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            position: relative;
+            z-index: 1;
+        }
 
-        .tl-icon { font-size: 1.05em; line-height: 1; }
+        /* Icon dot */
+        .tl-dot {
+            width: 30px; height: 30px;
+            background: #fff;
+            border: 1.5px solid rgba(14,165,233,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95em;
+            line-height: 1;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+            transition: box-shadow 0.14s, border-color 0.14s;
+        }
+
+        .tl-dot.dot-yellowcard { border-color: rgba(234,179,8,0.55); background: #fffbeb; }
+        .tl-dot.dot-redcard    { border-color: rgba(220,38,38,0.5);  background: #fef2f2; }
+        .tl-dot.dot-sub        { border-color: rgba(107,114,128,0.3); background: #f9fafb; }
+        .tl-dot.dot-penalty    { border-color: rgba(14,165,233,0.45); background: #f0f9ff; }
 
         .tl-min {
-            font-size: 0.75em;
+            font-size: 0.68em;
             color: var(--muted);
             white-space: nowrap;
-            font-weight: 500;
+            font-weight: 600;
+            letter-spacing: 0.3px;
         }
 
         .tl-player {
@@ -576,19 +563,28 @@
         .tl-assist { font-size: 0.83em; color: var(--muted); }
 
         .tl-period {
-            color: var(--muted);
-            font-size: 0.72em;
+            font-size: 0.68em;
             text-align: center;
-            padding: 8px 0 4px;
-            border-top: 1px solid #f0f0f0;
-            margin-top: 6px;
+            padding: 10px 0 5px;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            margin-top: 4px;
             grid-column: 1 / -1;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
+            letter-spacing: 1.2px;
+            font-weight: 700;
+            color: var(--accent);
+            position: relative;
+            z-index: 1;
         }
 
-        .tl-period:first-child { border-top: none; margin-top: 0; }
+        .tl-period:first-child { border-top: none; margin-top: 0; padding-top: 2px; }
+        .tl-period-label {
+            background: rgba(240,249,255,0.95);
+            padding: 2px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(14,165,233,0.15);
+            display: inline-block;
+        }
 
         .no-events {
             font-size: 0.82em;
@@ -925,11 +921,6 @@
         /* ── Mobile ── */
         @media (max-width: 768px) {
             .topbar-inner { padding: 0 14px; }
-            .league-nav-inner { padding: 8px 14px; }
-            .league-identity { margin: 16px auto 0; padding: 0 14px; }
-            .li-logo-wrap { width: 46px; height: 46px; border-radius: 14px; }
-            .li-logo-wrap img { width: 32px; height: 32px; }
-            .li-text h1 { font-size: 1.2em; }
             .tabs { padding: 0 8px; overflow-x: auto; scrollbar-width: none; margin-top: 14px; }
             .tabs::-webkit-scrollbar { display: none; }
             .tab-btn { padding: 10px 12px; font-size: 0.8em; }
@@ -966,8 +957,8 @@
         }
 
         @media (max-width: 520px) {
-            .li-text h1 { font-size: 1.1em; }
-            .tl-event { grid-template-columns: 1fr 48px 1fr; font-size: 0.74em; }
+            .tl-event { grid-template-columns: 1fr 40px 1fr; font-size: 0.74em; }
+            .tl-dot { width: 26px; height: 26px; font-size: 0.88em; }
             .fpl-row { grid-template-columns: 30px 1fr 32px 22px 22px 22px 22px 22px 30px; font-size: 0.7em; }
             /* Pitch: tighter on very small screens */
             .pitch-player { min-width: 28px; max-width: 38px; }
@@ -1124,6 +1115,102 @@
             cursor:pointer; font-family:inherit; }
         .today-btn:hover { background:rgba(14,165,233,0.08); }
 
+        /* ── Date picker ── */
+        .date-picker-wrap { position:relative; }
+
+        .date-label-btn {
+            background: none; border: none; cursor: pointer; font-family: inherit;
+            display: flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 10px;
+            transition: background 0.15s;
+        }
+        .date-label-btn:hover { background: rgba(14,165,233,0.08); }
+
+        .dp-chevron {
+            font-size: 0.75em; color: var(--muted);
+            transition: transform 0.2s;
+            line-height: 1; display: inline-block;
+        }
+        .date-label-btn.active .dp-chevron { transform: rotate(180deg); }
+
+        .date-picker-popup {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 50%; transform: translateX(-50%);
+            background: #fff;
+            border: 1px solid rgba(14,165,233,0.18);
+            border-radius: 20px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.07);
+            padding: 16px;
+            z-index: 200;
+            width: 272px;
+            animation: fadeDown 0.18s ease;
+        }
+        .date-picker-popup.open { display: block; }
+
+        .dp-header {
+            display: flex; align-items: center;
+            justify-content: space-between; margin-bottom: 10px;
+        }
+        .dp-month-label {
+            font-size: 0.84em; font-weight: 700; color: var(--text);
+            text-transform: capitalize;
+        }
+        .dp-nav-btn {
+            background: none; border: none; cursor: pointer;
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--accent); font-size: 1em;
+            transition: background 0.15s; flex-shrink: 0;
+        }
+        .dp-nav-btn:hover { background: rgba(14,165,233,0.1); }
+
+        .dp-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+        }
+        .dp-weekday {
+            font-size: 0.6em; font-weight: 700; text-align: center;
+            color: var(--muted); padding: 2px 0 7px;
+            text-transform: uppercase; letter-spacing: 0.4px;
+        }
+        .dp-day {
+            aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+            font-size: 0.78em; border-radius: 50%; cursor: pointer;
+            border: none; background: none; font-family: inherit;
+            font-weight: 500; color: var(--text); transition: background 0.13s, color 0.13s;
+        }
+        .dp-day:not(.dp-empty):hover { background: rgba(14,165,233,0.1); color: var(--accent); }
+        .dp-day.dp-today { color: var(--accent); font-weight: 800; }
+        .dp-day.dp-selected {
+            background: linear-gradient(135deg, #0c4a6e, #0ea5e9);
+            color: #fff !important; font-weight: 700;
+            box-shadow: 0 2px 8px rgba(14,165,233,0.35);
+        }
+        .dp-day.dp-other { color: #94a3b8; }
+        .dp-day.dp-other:hover { background: rgba(14,165,233,0.07); color: var(--accent); }
+        .dp-day.dp-disabled { color: #e2e8f0 !important; cursor: default; pointer-events: none; }
+        .dp-nav-btn:disabled { opacity: 0.25; cursor: default; pointer-events: none; }
+        .date-nav-btn:disabled { opacity: 0.28; cursor: default; }
+        .date-nav-btn:disabled:hover { background: rgba(14,165,233,0.08); transform: none; }
+
+        /* Tab-sisäinen liigavalitsin */
+        .tab-league-picker {
+            overflow-x: auto;
+            scrollbar-width: none;
+            margin: 12px -22px 18px;
+            padding: 0 22px;
+        }
+        .tab-league-picker::-webkit-scrollbar { display: none; }
+        .tlp-inner {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            width: max-content;
+            min-width: 100%;
+            padding-bottom: 4px;
+        }
+
         /* League section in day view */
         .league-section { margin-bottom:20px; }
         .league-section-header { display:flex; align-items:center; gap:8px; font-size:0.7em;
@@ -1142,62 +1229,8 @@
     </div>
 </header>
 
-<!-- ── League nav ── -->
-<nav class="league-nav">
-    <div class="league-nav-inner">
-        <span class="lnav-label">Jalkapallo</span>
-        <button class="league-btn active" data-league="pl" onclick="switchLeague('pl')">
-            <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/23.png" class="lc-logo" alt="">
-            Premier League
-        </button>
-        <button class="league-btn" data-league="laliga" onclick="switchLeague('laliga')">
-            <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/15.png" class="lc-logo" alt="">
-            La Liga
-        </button>
-        <button class="league-btn" data-league="bl" onclick="switchLeague('bl')">
-            <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/10.png" class="lc-logo" alt="">
-            Bundesliga
-        </button>
-        <button class="league-btn" data-league="seriea" onclick="switchLeague('seriea')">
-            <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/12.png" class="lc-logo" alt="">
-            Serie A
-        </button>
-        <button class="league-btn" data-league="ligue1" onclick="switchLeague('ligue1')">
-            <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/9.png" class="lc-logo" alt="">
-            Ligue 1
-        </button>
-        <button class="league-btn" data-league="ucl" onclick="switchLeague('ucl')">
-            <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/2.png" class="lc-logo" alt="">
-            Champions League
-        </button>
-        <div class="lnav-sep"></div>
-        <span class="lnav-label">Jääkiekko</span>
-        <button class="league-btn" data-league="nhl" onclick="switchLeague('nhl')">
-            <img src="https://a.espncdn.com/i/leaguelogos/hockey/500/1.png" class="lc-logo" alt="">
-            NHL
-        </button>
-        <button class="league-btn" data-league="liiga" onclick="switchLeague('liiga')">
-            <span style="font-size:1.1em;line-height:1">🏒</span>
-            Liiga
-        </button>
-    </div>
-</nav>
-
 <!-- ── Page content ── -->
 <div class="page-content">
-
-    <!-- League identity -->
-    <div class="league-identity">
-        <div class="li-logo-wrap">
-            <img id="league-logo"
-                 src="https://a.espncdn.com/i/leaguelogos/soccer/500/23.png"
-                 alt="League" onerror="this.style.display='none'">
-        </div>
-        <div class="li-text">
-            <h1 id="league-name">Premier League</h1>
-            <p id="league-subtitle">Englannin Valioliiga &mdash; Ottelutulokset &amp; ohjelma</p>
-        </div>
-    </div>
 
     <!-- Tabs -->
     <div class="tabs">
@@ -1212,7 +1245,13 @@
             <div class="date-nav" id="date-nav">
                 <button class="date-nav-btn" onclick="changeDay(-1)">&#8592;</button>
                 <div class="date-nav-center">
-                    <span class="date-nav-label" id="day-label"></span>
+                    <div class="date-picker-wrap">
+                        <button class="date-label-btn" onclick="toggleDatePicker()">
+                            <span class="date-nav-label" id="day-label"></span>
+                            <span class="dp-chevron">▾</span>
+                        </button>
+                        <div class="date-picker-popup" id="date-picker-popup"></div>
+                    </div>
                     <button class="today-btn" onclick="goToToday()">Tänään</button>
                 </div>
                 <button class="date-nav-btn" onclick="changeDay(1)">&#8594;</button>
@@ -1222,10 +1261,54 @@
             </div>
         </div>
         <div id="standings" class="tab-content">
-            <div class="loading"><div class="spinner"></div>Ladataan sarjataulukkoa...</div>
+            <div class="tab-league-picker">
+                <div class="tlp-inner">
+                    <span class="lnav-label">Jalkapallo</span>
+                    <button class="league-btn active" data-league="pl" onclick="switchLeague('pl')">
+                        <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/23.png" class="lc-logo" alt="">Premier League</button>
+                    <button class="league-btn" data-league="laliga" onclick="switchLeague('laliga')">
+                        <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/15.png" class="lc-logo" alt="">La Liga</button>
+                    <button class="league-btn" data-league="bl" onclick="switchLeague('bl')">
+                        <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/10.png" class="lc-logo" alt="">Bundesliga</button>
+                    <button class="league-btn" data-league="seriea" onclick="switchLeague('seriea')">
+                        <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/12.png" class="lc-logo" alt="">Serie A</button>
+                    <button class="league-btn" data-league="ligue1" onclick="switchLeague('ligue1')">
+                        <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/9.png" class="lc-logo" alt="">Ligue 1</button>
+                    <button class="league-btn" data-league="ucl" onclick="switchLeague('ucl')">
+                        <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/2.png" class="lc-logo" alt="">Champions League</button>
+                    <div class="lnav-sep"></div>
+                    <span class="lnav-label">Jääkiekko</span>
+                    <button class="league-btn" data-league="nhl" onclick="switchLeague('nhl')">
+                        <img src="https://a.espncdn.com/i/leaguelogos/hockey/500/1.png" class="lc-logo" alt="">NHL</button>
+                    <button class="league-btn" data-league="liiga" onclick="switchLeague('liiga')">
+                        <span style="font-size:1.1em;line-height:1">🏒</span>Liiga</button>
+                </div>
+            </div>
+            <div id="standings-body">
+                <div class="loading"><div class="spinner"></div>Ladataan...</div>
+            </div>
         </div>
         <div id="playerstats" class="tab-content">
-            <div class="loading"><div class="spinner"></div>Ladataan tilastoja...</div>
+            <div class="tab-league-picker">
+                <div class="tlp-inner">
+                    <span class="lnav-label">Jalkapallo</span>
+                    <button class="league-btn active" data-league="pl" onclick="switchLeague('pl')">
+                        <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/23.png" class="lc-logo" alt="">Premier League</button>
+                    <button class="league-btn" data-league="laliga" onclick="switchLeague('laliga')">
+                        <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/15.png" class="lc-logo" alt="">La Liga</button>
+                    <button class="league-btn" data-league="bl" onclick="switchLeague('bl')">
+                        <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/10.png" class="lc-logo" alt="">Bundesliga</button>
+                    <button class="league-btn" data-league="seriea" onclick="switchLeague('seriea')">
+                        <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/12.png" class="lc-logo" alt="">Serie A</button>
+                    <button class="league-btn" data-league="ligue1" onclick="switchLeague('ligue1')">
+                        <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/9.png" class="lc-logo" alt="">Ligue 1</button>
+                    <button class="league-btn" data-league="ucl" onclick="switchLeague('ucl')">
+                        <img src="https://a.espncdn.com/i/leaguelogos/soccer/500/2.png" class="lc-logo" alt="">Champions League</button>
+                </div>
+            </div>
+            <div id="playerstats-body">
+                <div class="loading"><div class="spinner"></div>Ladataan...</div>
+            </div>
         </div>
     </div>
 
@@ -1357,6 +1440,14 @@ function toESPNDate(d) {
 
 // ── UI: League / Tab switching ─────────────────────────────────────────────
 function showTab(tab, btn) {
+    // Auto-switch to PL if switching to playerstats with a hockey league active
+    if (tab === 'playerstats' && getLeague().sport !== 'soccer') {
+        currentLeagueKey = 'pl';
+        document.querySelectorAll('.tab-league-picker .league-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.league === 'pl');
+        });
+    }
+
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
@@ -1366,8 +1457,7 @@ function showTab(tab, btn) {
     // Lazy load if still showing spinner
     const el = document.getElementById(tab);
     if (el.querySelector('.loading')) {
-        const league = getLeague();
-        if (!league.unavailable) loadTabContent(tab, league);
+        loadTabContent(tab, getLeague());
     }
 }
 
@@ -1379,57 +1469,24 @@ function loadTabContent(tab, league) {
     }
 }
 
-function updateLeagueHeader(league) {
-    document.getElementById('league-name').textContent     = league.name;
-    document.getElementById('league-subtitle').textContent = league.subtitle;
-    const logo = document.getElementById('league-logo');
-    const wrap = logo.parentElement;
-    if (league.logo) {
-        logo.src = league.logo;
-        logo.style.display = '';
-        wrap.style.display = '';
-    } else {
-        wrap.style.display = 'none';
-    }
-}
-
-function unavailableHTML() {
-    return `<div class="unavailable-msg">
-        <div class="um-icon">⚠️</div>
-        <h3>Tietoja ei saatavilla</h3>
-        <p>SM-Liigan ottelutiedot eivät ole saatavilla ESPN:n avoimesta rajapinnasta. Ominaisuus on kehitteillä.</p>
-    </div>`;
-}
 
 function switchLeague(leagueKey) {
     if (leagueKey === currentLeagueKey) return;
-
     stopLiveRefresh();
-
-    document.querySelectorAll('.league-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector(`[data-league="${leagueKey}"]`).classList.add('active');
-
     currentLeagueKey = leagueKey;
-    currentTab = 'standings';
 
-    const league = LEAGUES[leagueKey];
-    updateLeagueHeader(league);
+    // Synkronoi aktiivisuus molemmissa pickereissä
+    document.querySelectorAll('.tab-league-picker .league-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.league === leagueKey);
+    });
 
-    // Switch to Standings tab
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.querySelector('[data-tab="standings"]').classList.add('active');
-    document.getElementById('standings').classList.add('active');
-
-    const LOADING = '<div class="loading"><div class="spinner"></div>Ladataan...</div>';
-    document.getElementById('standings').innerHTML   = LOADING;
-    document.getElementById('playerstats').innerHTML = LOADING;
-
-    // Show/hide player stats tab based on sport
-    const psTabBtn = document.querySelector('[data-tab="playerstats"]');
-    psTabBtn.style.display = league.sport === 'soccer' ? '' : 'none';
-
-    loadStandings(league);
+    // Lataa nykyisen tabin sisältö uudelleen
+    if (currentTab === 'standings' || currentTab === 'playerstats') {
+        const bodyId = currentTab + '-body';
+        document.getElementById(bodyId).innerHTML =
+            '<div class="loading"><div class="spinner"></div>Ladataan...</div>';
+        loadTabContent(currentTab, LEAGUES[leagueKey]);
+    }
 }
 
 // ── Scoreboard fetch ───────────────────────────────────────────────────────
@@ -1494,6 +1551,18 @@ function buildTimeline(keyEvents, homeTeamId, sport) {
         const isHome = e.team?.id === homeTeamId;
         const parts  = e.participants || [];
 
+        // Dot CSS class by event type
+        const dotClass = type === 'yellow-card'       ? 'dot-yellowcard'
+                       : type === 'red-card'           ? 'dot-redcard'
+                       : (type === 'yellow-red-card')  ? 'dot-redcard'
+                       : type === 'substitution'       ? 'dot-sub'
+                       : (type === 'missed-penalty')   ? 'dot-redcard'
+                       : (type.includes('penalty') && !e.scoringPlay) ? 'dot-penalty'
+                       : '';
+
+        // Extra class for scoring plays
+        const scoreClass = e.scoringPlay ? ' tl-score' : '';
+
         if (period !== curPeriod) {
             curPeriod = period;
             let lbl;
@@ -1506,7 +1575,7 @@ function buildTimeline(keyEvents, homeTeamId, sport) {
                     : period === 2 ? '2. puoliaika'
                     : period >= 3  ? 'Jatkoaika' : '';
             }
-            if (lbl) html += `<div class="tl-period">${lbl}</div>`;
+            if (lbl) html += `<div class="tl-period"><span class="tl-period-label">${lbl}</span></div>`;
         }
 
         let content = '';
@@ -1532,9 +1601,12 @@ function buildTimeline(keyEvents, homeTeamId, sport) {
                        ${showA && assistStr ? `<div class="tl-assist">↳ ${assistStr}</div>` : ''}`;
         }
 
-        html += `<div class="tl-event">
+        html += `<div class="tl-event${scoreClass}">
             <div class="tl-home">${isHome  ? content : ''}</div>
-            <div class="tl-center"><span class="tl-icon">${icon}</span><span class="tl-min">${min}</span></div>
+            <div class="tl-center">
+                <div class="tl-dot ${dotClass}">${icon}</div>
+                <span class="tl-min">${min}</span>
+            </div>
             <div class="tl-away">${!isHome ? content : ''}</div>
         </div>`;
     }
@@ -2264,9 +2336,8 @@ function attachTeamStatsHandlers(el, league) {
 }
 
 async function loadStandings(league) {
-    const el = document.getElementById('standings');
+    const el = document.getElementById('standings-body');
     if (league.isLiiga) { return loadLiigaStandings(league); }
-    if (league.unavailable) { el.innerHTML = unavailableHTML(); return; }
 
     try {
         const res = await fetch(standingsUrl(league));
@@ -2485,18 +2556,158 @@ function updateDayLabel(date) {
             weekday:'long', day:'numeric', month:'long'
         });
     }
+    updateNavArrows();
+}
+
+function getMaxDate() {
+    const t = new Date(); t.setHours(0,0,0,0);
+    // Last day of the month 3 months from now
+    return new Date(t.getFullYear(), t.getMonth() + 4, 0);
 }
 
 function changeDay(delta) {
-    currentDayDate = new Date(currentDayDate);
-    currentDayDate.setDate(currentDayDate.getDate() + delta);
+    const next = new Date(currentDayDate);
+    next.setDate(next.getDate() + delta);
+    if (delta > 0 && next > getMaxDate()) return;
+    currentDayDate = next;
+    updateNavArrows();
     loadDayView(currentDayDate);
+}
+
+function updateNavArrows() {
+    const rightBtn = document.querySelector('#date-nav .date-nav-btn:last-of-type');
+    if (rightBtn) rightBtn.disabled = currentDayDate >= getMaxDate();
 }
 
 function goToToday() {
     currentDayDate = new Date(); currentDayDate.setHours(0,0,0,0);
+    closeDatePicker();
+    updateNavArrows();
     loadDayView(currentDayDate);
 }
+
+// ── Date picker ─────────────────────────────────────────────────────────────
+let _dpView = new Date();
+
+function toggleDatePicker() {
+    const popup = document.getElementById('date-picker-popup');
+    const btn   = popup.previousElementSibling;
+    if (popup.classList.contains('open')) {
+        popup.classList.remove('open');
+        btn.classList.remove('active');
+    } else {
+        _dpView = new Date(currentDayDate);
+        renderDatePicker();
+        popup.classList.add('open');
+        btn.classList.add('active');
+    }
+}
+
+function closeDatePicker() {
+    const popup = document.getElementById('date-picker-popup');
+    if (!popup) return;
+    popup.classList.remove('open');
+    const btn = popup.previousElementSibling;
+    if (btn) btn.classList.remove('active');
+}
+
+function dpChangeMonth(delta) {
+    _dpView.setDate(1);
+    _dpView.setMonth(_dpView.getMonth() + delta);
+    renderDatePicker();
+}
+
+function pickDate(y, m, d) {
+    const picked = new Date(y, m, d);
+    if (picked > getMaxDate()) return;
+    currentDayDate = picked;
+    // Keep _dpView in sync with the picked month
+    _dpView = new Date(y, m, 1);
+    closeDatePicker();
+    updateNavArrows();
+    loadDayView(currentDayDate);
+}
+
+function renderDatePicker() {
+    const popup  = document.getElementById('date-picker-popup');
+    const year   = _dpView.getFullYear();
+    const month  = _dpView.getMonth();
+    const today  = new Date(); today.setHours(0,0,0,0);
+    const sel    = new Date(currentDayDate);
+    const maxD   = getMaxDate();
+
+    // Is this the max allowed month?
+    const maxYear = maxD.getFullYear(), maxMonth = maxD.getMonth();
+    const atMaxMonth = year > maxYear || (year === maxYear && month >= maxMonth);
+    // Is this the earliest we'd want to allow going back (say 1 year)?
+    const minD = new Date(today.getFullYear() - 1, today.getMonth(), 1);
+    const atMinMonth = year <= minD.getFullYear() && month <= minD.getMonth();
+
+    const monthLabel = new Date(year, month, 1).toLocaleDateString('fi-FI', {
+        month: 'long', year: 'numeric'
+    });
+
+    // Monday-first weekday offset
+    let startDow = new Date(year, month, 1).getDay();
+    startDow = (startDow + 6) % 7; // Mon=0
+
+    const daysInMonth   = new Date(year, month + 1, 0).getDate();
+    const prevMonthDays = new Date(year, month, 0).getDate();
+    const prevMonth     = month === 0 ? 11 : month - 1;
+    const prevYear      = month === 0 ? year - 1 : year;
+    const nextMonth     = month === 11 ? 0 : month + 1;
+    const nextYear      = month === 11 ? year + 1 : year;
+
+    const WDAYS = ['Ma','Ti','Ke','To','Pe','La','Su'];
+    let grid = WDAYS.map(w => `<div class="dp-weekday">${w}</div>`).join('');
+
+    // Leading days from prev month — clickable
+    for (let i = startDow - 1; i >= 0; i--) {
+        const d = prevMonthDays - i;
+        grid += `<button class="dp-day dp-other" onclick="pickDate(${prevYear},${prevMonth},${d})">${d}</button>`;
+    }
+
+    // Current month days
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dt = new Date(year, month, d);
+        let cls = 'dp-day';
+        if (dt > maxD) { cls += ' dp-disabled'; }
+        else {
+            if (dt.getTime() === today.getTime()) cls += ' dp-today';
+            if (dt.getTime() === sel.getTime())   cls += ' dp-selected';
+        }
+        grid += `<button class="${cls}" onclick="pickDate(${year},${month},${d})">${d}</button>`;
+    }
+
+    // Trailing days from next month — clickable if within limit
+    const total = startDow + daysInMonth;
+    const trailing = total % 7 === 0 ? 0 : 7 - (total % 7);
+    for (let d = 1; d <= trailing; d++) {
+        const dt = new Date(nextYear, nextMonth, d);
+        if (dt > maxD) {
+            grid += `<div class="dp-day dp-other dp-disabled">${d}</div>`;
+        } else {
+            grid += `<button class="dp-day dp-other" onclick="pickDate(${nextYear},${nextMonth},${d})">${d}</button>`;
+        }
+    }
+
+    popup.innerHTML = `
+        <div class="dp-header">
+            <button class="dp-nav-btn" ${atMinMonth ? 'disabled' : ''} onclick="dpChangeMonth(-1)">&#8592;</button>
+            <span class="dp-month-label">${monthLabel}</span>
+            <button class="dp-nav-btn" ${atMaxMonth ? 'disabled' : ''} onclick="dpChangeMonth(1)">&#8594;</button>
+        </div>
+        <div class="dp-grid">${grid}</div>`;
+}
+
+// Close picker on outside click
+// composedPath() captures the event path at dispatch time, before any innerHTML replacement
+document.addEventListener('click', e => {
+    const wrap = document.querySelector('.date-picker-wrap');
+    if (!wrap) return;
+    const path = e.composedPath ? e.composedPath() : [e.target];
+    if (!path.includes(wrap)) closeDatePicker();
+});
 
 async function fetchDayEvents(league, date) {
     if (league.isLiiga) {
@@ -2687,11 +2898,7 @@ function renderPlayerStats(el, data) {
 }
 
 async function loadPlayerStats(league) {
-    const el = document.getElementById('playerstats');
-    if (league.sport !== 'soccer') {
-        el.innerHTML = '<div class="no-events">Pelaajatilastot saatavilla vain jalkapallosarjoille.</div>';
-        return;
-    }
+    const el = document.getElementById('playerstats-body');
     try {
         const res = await fetch(playerStatsUrl(league));
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -2814,7 +3021,7 @@ async function loadLiigaMatchStats(panel, gameId) {
 }
 
 async function loadLiigaStandings(league) {
-    const el = document.getElementById('standings');
+    const el = document.getElementById('standings-body');
     try {
         const season = liigaCurrentSeason();
         const url    = `${FPL_PROXY}${encodeURIComponent(`https://www.liiga.fi/api/v2/standings?season=${season}&gameType=runkosarja`)}`;
@@ -2866,7 +3073,6 @@ async function loadLiigaStandings(league) {
 // ── Init ───────────────────────────────────────────────────────────────────
 currentTab = 'day';
 loadDayView(currentDayDate);
-updateLeagueHeader(LEAGUES['pl']);
 </script>
 
 </body>
