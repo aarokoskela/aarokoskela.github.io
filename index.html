@@ -937,13 +937,13 @@
 
             /* Compact match cards on mobile */
             .match-card {
-                padding: 8px 12px;
+                padding: 6px 12px;
                 margin-bottom: 2px;
                 border-radius: 14px;
             }
             .match-meta {
                 font-size: 0.65em;
-                margin-bottom: 5px;
+                margin-bottom: 4px;
             }
             .match-teams { gap: 4px; }
             .team {
@@ -1968,11 +1968,7 @@ function createCard(ev, league) {
     card.className = 'match-card' + (canBtn ? ' has-btns' : '');
 
     card.innerHTML = `
-        <div class="match-meta">
-            <span>${fmtDate(ev.date)}</span>
-            <span class="match-status ${statusClass}">${statusText}</span>
-            <span>${venue}</span>
-        </div>
+        ${isLive ? `<div class="match-meta"><span class="match-status ${statusClass}">${statusText}</span></div>` : ''}
         <div class="match-teams">
             <div class="team">
                 <div class="team-logo">
