@@ -1109,6 +1109,28 @@
             .pitch-dot { width: 25px; height: 25px; font-size: 0.6em; }
             .pitch-pname { font-size: 0.52em; max-width: 40px; }
         }
+
+        /* Date navigation */
+        .date-nav { display:flex; align-items:center; justify-content:space-between; margin:12px 0 16px; gap:8px; }
+        .date-nav-btn { background:rgba(14,165,233,0.08); border:1px solid rgba(14,165,233,0.2);
+            border-radius:50%; width:36px; height:36px; cursor:pointer; font-size:1.1em;
+            color:var(--accent); display:flex; align-items:center; justify-content:center;
+            transition:background 0.2s; flex-shrink:0; }
+        .date-nav-btn:hover { background:rgba(14,165,233,0.18); }
+        .date-nav-center { flex:1; text-align:center; display:flex; flex-direction:column; align-items:center; gap:4px; }
+        .date-nav-label { font-size:0.88em; font-weight:700; color:var(--text); text-transform:capitalize; }
+        .today-btn { background:transparent; border:1px solid rgba(14,165,233,0.3); border-radius:10px;
+            padding:2px 10px; font-size:0.7em; font-weight:600; color:var(--accent);
+            cursor:pointer; font-family:inherit; }
+        .today-btn:hover { background:rgba(14,165,233,0.08); }
+
+        /* League section in day view */
+        .league-section { margin-bottom:20px; }
+        .league-section-header { display:flex; align-items:center; gap:8px; font-size:0.7em;
+            text-transform:uppercase; letter-spacing:1.5px; color:var(--muted);
+            margin:20px 0 8px; font-weight:700; }
+        .league-section-header img { width:20px; height:20px; object-fit:contain; flex-shrink:0; }
+        .league-section-header::after { content:''; flex:1; height:1px; background:var(--card-border); }
     </style>
 </head>
 <body>
@@ -1179,19 +1201,25 @@
 
     <!-- Tabs -->
     <div class="tabs">
-        <button class="tab-btn active" data-tab="results"   onclick="showTab('results',   this)">Viimeisimmät tulokset</button>
-        <button class="tab-btn"        data-tab="upcoming"  onclick="showTab('upcoming',  this)">Tulevat ottelut</button>
+        <button class="tab-btn active" data-tab="day"        onclick="showTab('day',        this)">Päivän ottelut</button>
         <button class="tab-btn"        data-tab="standings"   onclick="showTab('standings',   this)">Sarjataulukko</button>
         <button class="tab-btn"        data-tab="playerstats" onclick="showTab('playerstats', this)">Pelaajatilastot</button>
     </div>
 
     <!-- Tab content -->
     <div class="container">
-        <div id="results"   class="tab-content active">
-            <div class="loading"><div class="spinner"></div>Ladataan tuloksia...</div>
-        </div>
-        <div id="upcoming"  class="tab-content">
-            <div class="loading"><div class="spinner"></div>Ladataan otteluohjelmaa...</div>
+        <div id="day" class="tab-content active">
+            <div class="date-nav" id="date-nav">
+                <button class="date-nav-btn" onclick="changeDay(-1)">&#8592;</button>
+                <div class="date-nav-center">
+                    <span class="date-nav-label" id="day-label"></span>
+                    <button class="today-btn" onclick="goToToday()">Tänään</button>
+                </div>
+                <button class="date-nav-btn" onclick="changeDay(1)">&#8594;</button>
+            </div>
+            <div id="day-content">
+                <div class="loading"><div class="spinner"></div>Ladataan...</div>
+            </div>
         </div>
         <div id="standings" class="tab-content">
             <div class="loading"><div class="spinner"></div>Ladataan sarjataulukkoa...</div>
@@ -1251,7 +1279,8 @@ const LEAGUES = {
 };
 
 let currentLeagueKey = 'pl';
-let currentTab = 'results';
+let currentTab = 'day';
+let currentDayDate = (() => { const d = new Date(); d.setHours(0,0,0,0); return d; })();
 
 function getLeague() { return LEAGUES[currentLeagueKey]; }
 
@@ -1344,10 +1373,9 @@ function showTab(tab, btn) {
 
 function loadTabContent(tab, league) {
     switch (tab) {
-        case 'results':     loadResults(league);     break;
-        case 'upcoming':    loadUpcoming(league);    break;
-        case 'standings':   loadStandings(league);   break;
-        case 'playerstats': loadPlayerStats(league); break;
+        case 'day':         loadDayView(currentDayDate); break;
+        case 'standings':   loadStandings(league);       break;
+        case 'playerstats': loadPlayerStats(league);     break;
     }
 }
 
@@ -1382,20 +1410,18 @@ function switchLeague(leagueKey) {
     document.querySelector(`[data-league="${leagueKey}"]`).classList.add('active');
 
     currentLeagueKey = leagueKey;
-    currentTab = 'results';
+    currentTab = 'standings';
 
     const league = LEAGUES[leagueKey];
     updateLeagueHeader(league);
 
-    // Reset tabs to Results
+    // Switch to Standings tab
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.querySelector('[data-tab="results"]').classList.add('active');
-    document.getElementById('results').classList.add('active');
+    document.querySelector('[data-tab="standings"]').classList.add('active');
+    document.getElementById('standings').classList.add('active');
 
     const LOADING = '<div class="loading"><div class="spinner"></div>Ladataan...</div>';
-    document.getElementById('results').innerHTML     = LOADING;
-    document.getElementById('upcoming').innerHTML    = LOADING;
     document.getElementById('standings').innerHTML   = LOADING;
     document.getElementById('playerstats').innerHTML = LOADING;
 
@@ -1403,15 +1429,7 @@ function switchLeague(leagueKey) {
     const psTabBtn = document.querySelector('[data-tab="playerstats"]');
     psTabBtn.style.display = league.sport === 'soccer' ? '' : 'none';
 
-    if (league.unavailable) {
-        const msg = unavailableHTML();
-        document.getElementById('results').innerHTML   = msg;
-        document.getElementById('upcoming').innerHTML  = msg;
-        document.getElementById('standings').innerHTML = msg;
-    } else {
-        loadResults(league);
-        // upcoming and standings are loaded lazily when their tab is clicked
-    }
+    loadStandings(league);
 }
 
 // ── Scoreboard fetch ───────────────────────────────────────────────────────
@@ -2441,8 +2459,122 @@ function startLiveRefresh(league) {
 
     liveInterval = setInterval(() => {
         liveCountdown = 60;
-        refreshResults(league);
+        if (currentTab === 'day') {
+            loadDayView(currentDayDate);
+        } else {
+            refreshResults(league);
+        }
     }, 60000);
+}
+
+// ── Day view ───────────────────────────────────────────────────────────────
+
+function updateDayLabel(date) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff = Math.round((date - today) / 864e5);
+    const el = document.getElementById('day-label');
+    if (!el) return;
+    if (diff === 0) {
+        el.textContent = 'Tänään';
+    } else if (diff === -1) {
+        el.textContent = 'Eilen';
+    } else if (diff === 1) {
+        el.textContent = 'Huomenna';
+    } else {
+        el.textContent = date.toLocaleDateString('fi-FI', {
+            weekday:'long', day:'numeric', month:'long'
+        });
+    }
+}
+
+function changeDay(delta) {
+    currentDayDate = new Date(currentDayDate);
+    currentDayDate.setDate(currentDayDate.getDate() + delta);
+    loadDayView(currentDayDate);
+}
+
+function goToToday() {
+    currentDayDate = new Date(); currentDayDate.setHours(0,0,0,0);
+    loadDayView(currentDayDate);
+}
+
+async function fetchDayEvents(league, date) {
+    if (league.isLiiga) {
+        const season = liigaCurrentSeason();
+        const games  = await fetchLiigaGames(season);
+        const dayStr = toESPNDate(date); // yyyymmdd
+        const dayMatches = games.filter(g => {
+            if (!g.homeTeam.teamName) return false;
+            const gDate = new Date(g.start);
+            return toESPNDate(gDate) === dayStr;
+        });
+        return dayMatches.map(liigaToESPN).filter(Boolean);
+    }
+    return fetchMatches(league, date, date);
+}
+
+async function loadDayView(date) {
+    stopLiveRefresh();
+    updateDayLabel(date);
+
+    const el = document.getElementById('day-content');
+    el.innerHTML = '<div class="loading"><div class="spinner"></div>Ladataan...</div>';
+
+    const leagueOrder = Object.values(LEAGUES);
+    const results = await Promise.allSettled(
+        leagueOrder.map(lg => fetchDayEvents(lg, date))
+    );
+
+    el.innerHTML = '';
+
+    let hasLive = false;
+    let anyEvents = false;
+
+    for (let i = 0; i < leagueOrder.length; i++) {
+        const league = leagueOrder[i];
+        const result = results[i];
+        if (result.status !== 'fulfilled') continue;
+        const events = result.value;
+        if (!events.length) continue;
+
+        anyEvents = true;
+
+        const section = document.createElement('div');
+        section.className = 'league-section';
+
+        const header = document.createElement('div');
+        header.className = 'league-section-header';
+        if (league.logo) {
+            const img = document.createElement('img');
+            img.src = league.logo;
+            img.alt = league.name;
+            img.onerror = () => { img.style.display = 'none'; };
+            header.appendChild(img);
+        }
+        header.appendChild(document.createTextNode(league.name));
+        section.appendChild(header);
+
+        const sortedEvents = events.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+        for (const ev of sortedEvents) {
+            if (ev.competitions[0].status.type.state === 'in') hasLive = true;
+            section.appendChild(createCard(ev, league));
+        }
+
+        el.appendChild(section);
+    }
+
+    if (!anyEvents) {
+        el.innerHTML = '<div class="no-events">Ei otteluita valitulla päivällä.</div>';
+    }
+
+    if (hasLive) {
+        const banner = document.createElement('div');
+        banner.className = 'live-banner';
+        banner.innerHTML = `<div class="live-dot"></div>
+            <span>Ottelu käynnissä — <span id="live-countdown">päivitetään 60 sek. kuluttua</span></span>`;
+        el.insertBefore(banner, el.firstChild);
+        startLiveRefresh(null);
+    }
 }
 
 async function refreshResults(league) {
@@ -2681,38 +2813,6 @@ async function loadLiigaMatchStats(panel, gameId) {
     }
 }
 
-async function loadLiigaResults(league) {
-    const el = document.getElementById('results');
-    try {
-        const season = liigaCurrentSeason();
-        const games  = await fetchLiigaGames(season);
-        const cutoff = new Date(Date.now() - 35 * 864e5);
-        const recent = games.filter(g => g.homeTeam.teamName &&
-            (g.ended || g.started) && new Date(g.start) >= cutoff);
-        const live     = recent.filter(g => g.started && !g.ended);
-        const finished = recent.filter(g => g.ended);
-        renderResultsWithLive([...live, ...finished].map(liigaToESPN).filter(Boolean),
-            live.length > 0, league);
-        if (live.length > 0) startLiveRefresh(league);
-    } catch (err) {
-        el.innerHTML = `<div class="error-msg">Virhe: ${err.message}</div>`;
-    }
-}
-
-async function loadLiigaUpcoming(league) {
-    const el = document.getElementById('upcoming');
-    try {
-        const season  = liigaCurrentSeason();
-        const games   = await fetchLiigaGames(season);
-        const cutoff  = new Date(Date.now() + 35 * 864e5);
-        const upcoming = games.filter(g => g.homeTeam.teamName &&
-            !g.started && !g.ended && new Date(g.start) <= cutoff);
-        renderEvents(upcoming.map(liigaToESPN).filter(Boolean), 'upcoming', true, league);
-    } catch (err) {
-        el.innerHTML = `<div class="error-msg">Virhe: ${err.message}</div>`;
-    }
-}
-
 async function loadLiigaStandings(league) {
     const el = document.getElementById('standings');
     try {
@@ -2763,43 +2863,10 @@ async function loadLiigaStandings(league) {
     }
 }
 
-// ── Load functions ─────────────────────────────────────────────────────────
-async function loadResults(league) {
-    if (league.isLiiga) { return loadLiigaResults(league); }
-    const el = document.getElementById('results');
-    try {
-        const to = new Date(), from = new Date();
-        from.setDate(from.getDate() - 35);
-        const events   = await fetchMatches(league, from, to);
-        const live     = events.filter(e => e.competitions[0].status.type.state === 'in');
-        const finished = events.filter(e => e.competitions[0].status.type.state === 'post');
-
-        renderResultsWithLive([...live, ...finished], live.length > 0, league);
-
-        if (live.length > 0) startLiveRefresh(league);
-    } catch (err) {
-        el.innerHTML = `<div class="error-msg">Virhe: ${err.message}</div>`;
-    }
-}
-
-async function loadUpcoming(league) {
-    if (league.isLiiga) { return loadLiigaUpcoming(league); }
-    const el = document.getElementById('upcoming');
-    try {
-        const from = new Date(), to = new Date();
-        to.setDate(to.getDate() + 35);
-        const events = await fetchMatches(league, from, to);
-        renderEvents(events.filter(e => e.competitions[0].status.type.state === 'pre'), 'upcoming', true, league);
-    } catch (err) {
-        el.innerHTML = `<div class="error-msg">Virhe: ${err.message}</div>`;
-    }
-}
-
 // ── Init ───────────────────────────────────────────────────────────────────
-const initialLeague = LEAGUES['pl'];
-loadResults(initialLeague);
-loadUpcoming(initialLeague);
-loadStandings(initialLeague);
+currentTab = 'day';
+loadDayView(currentDayDate);
+updateLeagueHeader(LEAGUES['pl']);
 </script>
 
 </body>
