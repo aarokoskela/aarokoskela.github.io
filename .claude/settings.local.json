@@ -4,7 +4,8 @@
       "Bash(curl:*)",
       "Bash(head:*)",
       "Bash(python3:*)",
-      "Bash(open:*)"
+      "Bash(open:*)",
+      "WebFetch(domain:site.api.espn.com)"
     ]
   }
 }

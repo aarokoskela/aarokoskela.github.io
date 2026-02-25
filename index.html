@@ -488,83 +488,68 @@
             display: flex;
             flex-direction: column;
             gap: 0;
-            position: relative;
             padding: 4px 0;
-        }
-
-        /* Vertical center line */
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 0; bottom: 0;
-            width: 1.5px;
-            background: linear-gradient(to bottom,
-                transparent,
-                rgba(14,165,233,0.15) 8%,
-                rgba(14,165,233,0.15) 92%,
-                transparent);
-            transform: translateX(-50%);
-            pointer-events: none;
         }
 
         .tl-event {
             display: grid;
-            grid-template-columns: 1fr 44px 1fr;
-            gap: 0;
-            align-items: center;
+            grid-template-columns: 1fr 1fr;
             font-size: 0.8em;
-            padding: 4px 0;
-            border-radius: 8px;
+            border-radius: 7px;
             transition: background 0.14s;
         }
 
-        .tl-event:hover { background: rgba(14,165,233,0.06); }
+        .tl-event:hover { background: rgba(14,165,233,0.05); }
 
-        .tl-event.tl-score .tl-dot {
-            box-shadow: 0 0 0 3px rgba(14,165,233,0.12), 0 1px 5px rgba(0,0,0,0.09);
-            border-color: rgba(14,165,233,0.45);
+        .tl-home-col {
+            display: flex;
+            align-items: flex-start;
+            gap: 7px;
+            padding: 5px 10px 5px 4px;
+            border-right: 1px solid rgba(0,0,0,0.06);
         }
 
-        .tl-home, .tl-away { display: flex; flex-direction: column; gap: 1px; }
-        .tl-home { text-align: right; align-items: flex-end; padding-right: 10px; }
-        .tl-away { text-align: left; align-items: flex-start; padding-left: 10px; }
+        .tl-away-col {
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-end;
+            gap: 7px;
+            padding: 5px 4px 5px 10px;
+        }
 
-        .tl-center {
+        .tl-marker {
+            flex-shrink: 0;
+            line-height: 1.35;
+            padding-top: 1px;
+            white-space: nowrap;
+            font-size: 1.05em;
+        }
+
+        .tl-score-chip {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(14,165,233,0.1);
+            border: 1px solid rgba(14,165,233,0.22);
+            border-radius: 6px;
+            padding: 1px 7px;
+            font-size: 0.86em;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            color: #0369a1;
+            white-space: nowrap;
+        }
+
+        .tl-event-body {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            position: relative;
-            z-index: 1;
+            gap: 1px;
+            min-width: 0;
+            flex: 1;
         }
 
-        /* Icon dot */
-        .tl-dot {
-            width: 30px; height: 30px;
-            background: #fff;
-            border: 1.5px solid rgba(14,165,233,0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.95em;
-            line-height: 1;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-            transition: box-shadow 0.14s, border-color 0.14s;
-        }
-
-        .tl-dot.dot-yellowcard { border-color: rgba(234,179,8,0.55); background: #fffbeb; }
-        .tl-dot.dot-redcard    { border-color: rgba(220,38,38,0.5);  background: #fef2f2; }
-        .tl-dot.dot-sub        { border-color: rgba(107,114,128,0.3); background: #f9fafb; }
-        .tl-dot.dot-penalty    { border-color: rgba(14,165,233,0.45); background: #f0f9ff; }
-
-        .tl-min {
-            font-size: 0.68em;
-            color: var(--muted);
-            white-space: nowrap;
-            font-weight: 600;
-            letter-spacing: 0.3px;
+        .tl-away-col .tl-event-body {
+            text-align: right;
+            align-items: flex-end;
         }
 
         .tl-player {
@@ -573,19 +558,24 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 100%;
+            max-width: 160px;
+            line-height: 1.3;
         }
 
-        .tl-sub-detail {
-            font-size: 0.85em;
+        .tl-assist {
+            font-size: 0.82em;
             color: var(--muted);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 100%;
+            max-width: 160px;
         }
 
-        .tl-assist { font-size: 0.83em; color: var(--muted); }
+        .tl-min {
+            font-size: 0.66em;
+            color: #94a3b8;
+            font-weight: 500;
+        }
 
         .tl-period {
             font-size: 0.68em;
@@ -593,7 +583,6 @@
             padding: 10px 0 5px;
             border-top: 1px solid rgba(0,0,0,0.06);
             margin-top: 4px;
-            grid-column: 1 / -1;
             text-transform: uppercase;
             letter-spacing: 1.2px;
             font-weight: 700;
@@ -982,149 +971,146 @@
         }
 
         @media (max-width: 520px) {
-            .tl-event { grid-template-columns: 1fr 40px 1fr; font-size: 0.74em; }
-            .tl-dot { width: 26px; height: 26px; font-size: 0.88em; }
+            .tl-event { font-size: 0.74em; }
+            .tl-player, .tl-assist { max-width: 110px; }
             .fpl-row { grid-template-columns: 30px 1fr 32px 22px 22px 22px 22px 22px 30px; font-size: 0.7em; }
-            /* Pitch: tighter on very small screens */
-            .pitch-player { min-width: 28px; max-width: 38px; }
-            .pitch-dot { width: 22px; height: 22px; font-size: 0.55em; }
-            .pitch-pname { font-size: 0.47em; max-width: 34px; }
         }
 
-        /* ── Lineup Pitch ── */
-        .lineup-pitch { font-size: 0.88em; overflow-x: auto; }
+        /* ── Lineup Lists ── */
+        .lineup-lists {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
 
-        .pitch-team-strip {
+        @media (max-width: 600px) {
+            .lineup-lists { grid-template-columns: 1fr; }
+        }
+
+        .lu-team {
+            background: rgba(14,165,233,0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.07);
+            padding: 12px;
+        }
+
+        .lu-team-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 6px 6px 4px;
+            border-left: 3px solid;
+            padding-left: 10px;
+            margin-bottom: 12px;
         }
 
-        .pitch-team-badge {
+        .lu-team-name {
+            font-size: 0.82em;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .lu-formation {
             font-size: 0.72em;
             font-weight: 700;
-            padding: 3px 10px;
-            border-radius: 12px;
-            letter-spacing: 0.3px;
-        }
-
-        .home-badge { background: #0369a1; color: #fff; }
-        .away-badge { background: #1e40af; color: #fff; }
-
-        .pitch-fmtn {
-            font-size: 0.7em;
-            color: rgba(255,255,255,0.6);
-            font-weight: 600;
+            color: var(--muted);
+            background: rgba(0,0,0,0.06);
+            padding: 2px 8px;
+            border-radius: 8px;
             letter-spacing: 1px;
         }
 
-        .pitch-field {
-            background: linear-gradient(180deg, #276a35 0%, #2d7a3d 40%, #2d7a3d 60%, #276a35 100%);
-            border-radius: 10px;
-            overflow: visible;
-            position: relative;
-            padding: 10px 4px;
-            min-width: min-content;
+        .lu-section-title {
+            font-size: 0.68em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            margin: 10px 0 5px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid rgba(0,0,0,0.07);
         }
 
-        .pitch-field::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: repeating-linear-gradient(
-                180deg,
-                transparent, transparent 38px,
-                rgba(0,0,0,0.05) 38px, rgba(0,0,0,0.05) 76px
-            );
-            pointer-events: none;
+        .lu-pos-label, .lu-line-label {
+            font-size: 0.63em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #94a3b8;
+            margin: 6px 0 2px;
+            padding-left: 2px;
         }
 
-        .pitch-half {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            padding: 6px 0;
-        }
-
-        .pitch-midline-wrap {
-            position: relative;
-            height: 28px;
+        .lu-player {
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin: 2px 0;
+            gap: 6px;
+            padding: 3px 2px;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+            font-size: 0.8em;
         }
 
-        .pitch-midline-wrap::before {
-            content: '';
-            position: absolute;
-            left: 0; right: 0;
-            height: 1px;
-            background: rgba(255,255,255,0.35);
+        .lu-player:last-child { border-bottom: none; }
+
+        .lu-player.lu-sub { opacity: 0.72; }
+
+        .lu-player.lu-starter-gk {
+            background: rgba(14,165,233,0.07);
+            border-radius: 7px;
+            border-bottom: none;
+            margin-bottom: 3px;
+            padding: 5px 7px;
         }
 
-        .pitch-center-circle {
-            width: 52px; height: 52px;
-            border: 1.5px solid rgba(255,255,255,0.35);
-            border-radius: 50%;
-            position: absolute;
-            background: transparent;
-        }
-
-        .pitch-row {
-            display: flex;
-            justify-content: space-evenly;
-            align-items: flex-start;
-            gap: 2px;
-            padding: 2px 6px;
-        }
-
-        .pitch-player {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-            min-width: 44px;
-            max-width: 58px;
-        }
-
-        .pitch-dot {
-            width: 30px; height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.66em;
-            font-weight: 800;
-            color: #fff;
-            box-shadow: 0 2px 7px rgba(0,0,0,0.45);
-            border: 2px solid rgba(255,255,255,0.3);
-            flex-shrink: 0;
-            line-height: 1;
-        }
-
-        .pitch-dot.home { background: #0369a1; }
-        .pitch-dot.away { background: #2563eb; }
-
-        .pitch-pname {
-            font-size: 0.57em;
-            color: #fff;
+        .lu-jersey {
+            width: 20px;
             text-align: center;
-            text-shadow: 0 1px 4px rgba(0,0,0,1);
-            max-width: 54px;
-            line-height: 1.2;
+            font-weight: 700;
+            font-size: 0.88em;
+            color: var(--muted);
+            flex-shrink: 0;
+        }
+
+        .lu-pos-tag {
+            font-size: 0.68em;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            min-width: 24px;
+            text-align: center;
+            letter-spacing: 0.2px;
+        }
+
+        .lu-name {
+            flex: 1;
+            font-size: 0.9em;
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
-            font-weight: 600;
         }
 
-        @media (max-width: 520px) {
-            .pitch-player { min-width: 34px; max-width: 46px; }
-            .pitch-dot { width: 25px; height: 25px; font-size: 0.6em; }
-            .pitch-pname { font-size: 0.52em; max-width: 40px; }
+        .lu-starter-badge {
+            font-size: 0.6em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            background: #0ea5e9;
+            color: #fff;
+            padding: 1px 6px;
+            border-radius: 4px;
+            flex-shrink: 0;
         }
+
+        .lu-sub-mark {
+            font-size: 0.68em;
+            font-weight: 700;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .lu-sub-out { color: #ef4444; }
+        .lu-sub-in  { color: #22c55e; }
 
         /* Date navigation */
         .date-nav { display:flex; align-items:center; justify-content:space-between; margin:12px 0 16px; gap:8px; }
@@ -1576,7 +1562,6 @@ function loadTabContent(tab, league) {
 
 function switchLeague(leagueKey) {
     if (leagueKey === currentLeagueKey) return;
-    stopLiveRefresh();
     currentLeagueKey = leagueKey;
 
     // Synkronoi aktiivisuus molemmissa pickereissä
@@ -1628,14 +1613,15 @@ function buildTimeline(keyEvents, homeTeamId, sport) {
     const SHOW = isHockey
         ? new Set(['goal','penalty','penalty-shot','shootout-goal'])
         : new Set(['goal','own-goal','yellow-card','red-card','yellow-red-card','substitution','penalty-goal','missed-penalty']);
-    const ICONS = isHockey ? HOCKEY_ICONS : SOCCER_ICONS;
+    const NON_SCORE_MARKERS = {
+        'yellow-card':'🟨','red-card':'🟥','yellow-red-card':'🟨🟥',
+        'substitution':'🔄','missed-penalty':'❌','penalty':'⛔','goalie-change':'🥅',
+    };
 
     const events = keyEvents.filter(e => {
         const type = espnEventType(e);
         if (SHOW.has(type)) return true;
-        // All scoring plays regardless of sport/type string
         if (e.scoringPlay) return true;
-        // NHL plays: penalties identified by penaltyMinutes field
         if (isHockey && e.type?.penaltyMinutes) return true;
         return false;
     });
@@ -1643,30 +1629,25 @@ function buildTimeline(keyEvents, homeTeamId, sport) {
 
     let html = '<div class="timeline">';
     let curPeriod = null;
+    let homeGoals = 0, awayGoals = 0;
 
     for (const e of events) {
-        const period = e.period?.number ?? 0;
-        const type   = espnEventType(e);
-        const min    = e.clock?.displayValue || '';
+        const period       = e.period?.number ?? 0;
+        const type         = espnEventType(e);
+        const min          = e.clock?.displayValue || '';
+        const isHome       = e.team?.id === homeTeamId;
+        const parts        = e.participants || [];
+        const isOwnGoal    = type === 'own-goal';
+        const isScoring    = e.scoringPlay || ['goal','penalty-goal','shootout-goal'].includes(type);
         const isNHLPenalty = isHockey && !e.scoringPlay && e.type?.penaltyMinutes;
-        const icon   = isNHLPenalty ? '⛔'
-                     : ICONS[type]
-                     || (e.scoringPlay ? (isHockey ? '🏒' : '⚽') : '•');
-        const isHome = e.team?.id === homeTeamId;
-        const parts  = e.participants || [];
 
-        // Dot CSS class by event type
-        const dotClass = type === 'yellow-card'       ? 'dot-yellowcard'
-                       : type === 'red-card'           ? 'dot-redcard'
-                       : (type === 'yellow-red-card')  ? 'dot-redcard'
-                       : type === 'substitution'       ? 'dot-sub'
-                       : (type === 'missed-penalty')   ? 'dot-redcard'
-                       : (type.includes('penalty') && !e.scoringPlay) ? 'dot-penalty'
-                       : '';
+        // Track running score
+        if (isScoring && !isNHLPenalty) {
+            if (isOwnGoal) { if (isHome) awayGoals++; else homeGoals++; }
+            else           { if (isHome) homeGoals++; else awayGoals++; }
+        }
 
-        // Extra class for scoring plays
-        const scoreClass = e.scoringPlay ? ' tl-score' : '';
-
+        // Period header
         if (period !== curPeriod) {
             curPeriod = period;
             let lbl;
@@ -1682,37 +1663,60 @@ function buildTimeline(keyEvents, homeTeamId, sport) {
             if (lbl) html += `<div class="tl-period"><span class="tl-period-label">${lbl}</span></div>`;
         }
 
-        let content = '';
+        // Marker on outer edge
+        let marker;
+        if (isScoring && !isNHLPenalty) {
+            const scoredHome = (isHome && !isOwnGoal) || (!isHome && isOwnGoal);
+            const hDisp = scoredHome ? `<b>${homeGoals}</b>` : homeGoals;
+            const aDisp = scoredHome ? awayGoals          : `<b>${awayGoals}</b>`;
+            marker = `<span class="tl-score-chip">${hDisp}–${aDisp}</span>`;
+        } else {
+            marker = NON_SCORE_MARKERS[type] || (isNHLPenalty ? '⛔' : '•');
+        }
+
+        // Content: player, assist, time
+        let playerText = '', assistText = '';
         if (type === 'substitution') {
             const pOn  = parts[0]?.athlete?.displayName ?? '?';
             const pOff = parts[1]?.athlete?.displayName ?? '';
-            content = `<div class="tl-player">▲ ${pOn}</div>
-                       ${pOff ? `<div class="tl-sub-detail">▼ ${pOff}</div>` : ''}`;
+            playerText = `▲ ${pOn}${pOff ? ` / ▼ ${pOff}` : ''}`;
         } else if (isNHLPenalty) {
-            const player   = parts[0]?.athlete?.displayName ?? '';
-            const penName  = e.type?.text || '';
-            const penMins  = e.type?.penaltyMinutes || '';
-            content = `<div class="tl-player">${player}</div>
-                       <div class="tl-assist">${penName}${penMins ? ' ('+penMins+' min)' : ''}</div>`;
+            playerText = parts[0]?.athlete?.displayName ?? '';
+            const penName = e.type?.text || '';
+            const penMins = e.type?.penaltyMinutes || '';
+            assistText = `${penName}${penMins ? ' (' + penMins + ' min)' : ''}`;
         } else {
-            // Find scorer and assisters (NHL plays mark them by type field)
-            const scorer   = (parts.find(p => p.type === 'scorer') ?? parts[0])?.athlete?.displayName ?? '';
-            const a1       = (parts.find(p => p.type === 'assister') ?? parts[1])?.athlete?.displayName ?? '';
-            const a2       = parts.filter(p => p.type === 'assister')[1]?.athlete?.displayName ?? '';
-            const showA = (a1 || a2) && (['goal','penalty-goal','shootout-goal'].includes(type) || e.scoringPlay);
-            const assistStr = [a1, a2].filter(Boolean).join(', ');
-            content = `<div class="tl-player">${scorer}</div>
-                       ${showA && assistStr ? `<div class="tl-assist">↳ ${assistStr}</div>` : ''}`;
+            const scorer = (parts.find(p => p.type === 'scorer') ?? parts[0])?.athlete?.displayName ?? '';
+            const a1     = (parts.find(p => p.type === 'assister') ?? parts[1])?.athlete?.displayName ?? '';
+            const a2     = parts.filter(p => p.type === 'assister')[1]?.athlete?.displayName ?? '';
+            playerText   = scorer + (isOwnGoal ? ' (om)' : '');
+            const showA  = (a1 || a2) && (isScoring || ['goal','penalty-goal'].includes(type));
+            assistText   = showA ? [a1, a2].filter(Boolean).join(', ') : '';
         }
 
-        html += `<div class="tl-event${scoreClass}">
-            <div class="tl-home">${isHome  ? content : ''}</div>
-            <div class="tl-center">
-                <div class="tl-dot ${dotClass}">${icon}</div>
-                <span class="tl-min">${min}</span>
-            </div>
-            <div class="tl-away">${!isHome ? content : ''}</div>
+        const bodyHTML = `<div class="tl-event-body">
+            ${playerText ? `<div class="tl-player">${playerText}</div>` : ''}
+            ${assistText ? `<div class="tl-assist">↳ ${assistText}</div>` : ''}
+            ${min       ? `<div class="tl-min">${min}</div>` : ''}
         </div>`;
+
+        if (isHome) {
+            html += `<div class="tl-event">
+                <div class="tl-home-col">
+                    <div class="tl-marker">${marker}</div>
+                    ${bodyHTML}
+                </div>
+                <div class="tl-away-col"></div>
+            </div>`;
+        } else {
+            html += `<div class="tl-event">
+                <div class="tl-home-col"></div>
+                <div class="tl-away-col">
+                    ${bodyHTML}
+                    <div class="tl-marker">${marker}</div>
+                </div>
+            </div>`;
+        }
     }
 
     return html + '</div>';
@@ -2018,79 +2022,241 @@ function parseFormationRows(roster) {
     return groups.filter(g => g.length > 0);
 }
 
-function buildSoccerPitch(homeRoster, awayRoster, homeTeam, awayTeam) {
-    const homeRows = parseFormationRows(homeRoster);
-    const awayRows = parseFormationRows(awayRoster);
-    const homeFmtn = homeRoster?.formation || '';
-    const awayFmtn = awayRoster?.formation || '';
+const SOCCER_POS_LABEL = { 0:'MV', 1:'Puolustajat', 2:'Keskikenttäpelaajat', 3:'Hyökkääjät' };
 
-    const row = (players, side) => {
-        if (!players.length) return '';
-        return `<div class="pitch-row">${players.map(p => {
-            const num  = p.jersey || '';
-            const name = shortName(p.athlete);
-            return `<div class="pitch-player">
-                <div class="pitch-dot ${side}">${num}</div>
-                <div class="pitch-pname">${name}</div>
+function buildSoccerLineup(homeRoster, awayRoster, homeTeam, awayTeam) {
+    const buildTeam = (roster, teamName, color) => {
+        if (!roster) return `<div class="no-events">Ei kokoonpanotietoja</div>`;
+        const players  = roster.roster || [];
+        const starters = players.filter(p => p.starter);
+        const subs     = players.filter(p => !p.starter);
+        if (!starters.length) return `<div class="no-events">Ei kokoonpanotietoja</div>`;
+
+        const formation = roster.formation || '';
+        const groups = [[], [], [], []];
+        for (const p of starters) {
+            groups[getSoccerGroup(p.athlete?.position?.abbreviation)].push(p);
+        }
+
+        const subTime = (p) => {
+            const c = p.plays?.[0]?.clock;
+            if (!c) return '';
+            const val = typeof c === 'string' ? c : (c.displayValue || c.value || '');
+            return val ? ` ${val}` : '';
+        };
+
+        const playerRow = (p, isSub) => {
+            const pos      = p.athlete?.position?.abbreviation || '–';
+            const bg       = isSub ? 'rgba(148,163,184,0.15)' : `${color}22`;
+            const clr      = isSub ? '#64748b' : color;
+            const subbedOut = !isSub && p.subbedOut;
+            const subbedIn  = isSub  && p.subbedIn;
+            const subMark   = subbedOut
+                ? `<span class="lu-sub-mark lu-sub-out" title="Vaihdettu pois${subTime(p)}">▼${subTime(p)}</span>`
+                : subbedIn
+                ? `<span class="lu-sub-mark lu-sub-in"  title="Tuli vaihdossa${subTime(p)}">▲${subTime(p)}</span>`
+                : '';
+            return `<div class="lu-player${isSub ? ' lu-sub' : ''}">
+                <span class="lu-jersey">${p.jersey || '–'}</span>
+                <span class="lu-pos-tag" style="background:${bg};color:${clr}">${pos}</span>
+                <span class="lu-name">${p.athlete?.displayName || '?'}</span>
+                ${subMark}
             </div>`;
-        }).join('')}</div>`;
+        };
+
+        let html = `<div class="lu-team-header" style="border-color:${color}">
+            <span class="lu-team-name" style="color:${color}">${teamName}</span>
+            ${formation ? `<span class="lu-formation">${formation}</span>` : ''}
+        </div>
+        <div class="lu-section-title">⚽ Avauskokoonpano</div>`;
+
+        for (let i = 0; i < 4; i++) {
+            if (!groups[i].length) continue;
+            html += `<div class="lu-pos-label">${SOCCER_POS_LABEL[i]}</div>`;
+            html += groups[i].map(p => playerRow(p, false)).join('');
+        }
+
+        if (subs.length) {
+            html += `<div class="lu-section-title" style="margin-top:12px">🔄 Vaihtopelaajat</div>`;
+            html += subs.map(p => playerRow(p, true)).join('');
+        }
+
+        return `<div class="lu-team">${html}</div>`;
     };
 
-    // Home: GK→DEF→MID→FWD (top half, GK at top)
-    // Away: FWD→MID→DEF→GK (bottom half, GK at bottom — mirrored)
-    return `<div class="lineup-pitch">
-        <div class="pitch-team-strip" style="background:rgba(3,105,161,0.15);border-radius:8px 8px 0 0">
-            <span class="pitch-team-badge home-badge">${homeTeam.shortDisplayName || homeTeam.displayName}</span>
-            <span class="pitch-fmtn">${homeFmtn}</span>
-        </div>
-        <div class="pitch-field">
-            <div class="pitch-half">
-                ${homeRows.map(r => row(r, 'home')).join('')}
-            </div>
-            <div class="pitch-midline-wrap">
-                <div class="pitch-center-circle"></div>
-            </div>
-            <div class="pitch-half">
-                ${[...awayRows].reverse().map(r => row(r, 'away')).join('')}
-            </div>
-        </div>
-        <div class="pitch-team-strip" style="background:rgba(37,99,235,0.12);border-radius:0 0 8px 8px">
-            <span class="pitch-team-badge away-badge">${awayTeam.shortDisplayName || awayTeam.displayName}</span>
-            <span class="pitch-fmtn">${awayFmtn}</span>
-        </div>
+    const homeName = homeTeam.shortDisplayName || homeTeam.displayName;
+    const awayName = awayTeam.shortDisplayName || awayTeam.displayName;
+    return `<div class="lineup-lists">
+        ${buildTeam(homeRoster, homeName, '#0369a1')}
+        ${buildTeam(awayRoster, awayName, '#1e40af')}
     </div>`;
 }
 
-function buildSimpleLineup(homeRoster, awayRoster, homeTeam, awayTeam) {
-    const getStarters = (r) => (r?.roster || []).filter(p => p.starter);
-    const list = (players, teamName, side) => {
-        if (!players.length) return `<div class="no-events">Ei kokoonpanotietoja</div>`;
-        return `<div>
-            <div style="font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:1px;
-                        color:${side==='home'?'#0369a1':'#2563eb'};margin-bottom:8px">${teamName}</div>
-            ${players.map(p => `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;
-                                            border-bottom:1px solid #f0f0f0;font-size:0.8em">
-                <span style="width:22px;text-align:center;font-weight:700;color:var(--muted)">${p.jersey||'–'}</span>
-                <span style="font-size:0.72em;font-weight:600;background:${side==='home'?'#bae6fd':'#dbeafe'};
-                             color:${side==='home'?'#0369a1':'#1e40af'};
-                             padding:1px 5px;border-radius:4px;flex-shrink:0">
-                    ${p.athlete?.position?.abbreviation||'–'}
-                </span>
-                <span>${p.athlete?.displayName||'?'}</span>
-            </div>`).join('')}
-        </div>`;
+// NHL: data comes from boxscore.players[i].statistics categories
+function buildHockeyLineup(homeBs, awayBs, homeTeam, awayTeam) {
+    const parseToI = (toi) => {
+        if (!toi) return 0;
+        const [m, s] = String(toi).split(':').map(Number);
+        return (m || 0) * 60 + (s || 0);
     };
-    return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        ${list(getStarters(homeRoster), homeTeam.shortDisplayName||homeTeam.displayName, 'home')}
-        ${list(getStarters(awayRoster), awayTeam.shortDisplayName||awayTeam.displayName, 'away')}
+
+    const buildTeam = (bsTeam, teamName, color) => {
+        if (!bsTeam) return `<div class="no-events">Ei kokoonpanotietoja</div>`;
+        const stats = bsTeam.statistics || [];
+        const getGroup = (name) => (stats.find(s => s.name === name)?.athletes || []);
+
+        const forwards = getGroup('forwards');
+        const defense  = getGroup('defenses');
+        const goalies  = getGroup('goalies');
+
+        if (!forwards.length && !defense.length && !goalies.length)
+            return `<div class="no-events">Ei kokoonpanotietoja</div>`;
+
+        // Starting goalie = most ice time (stats index 9 = timeOnIce for goalies)
+        const startGk = goalies.length
+            ? goalies.reduce((best, g) =>
+                parseToI(g.stats?.[9]) > parseToI(best?.stats?.[9]) ? g : best, goalies[0])
+            : null;
+
+        let html = `<div class="lu-team-header" style="border-color:${color}">
+            <span class="lu-team-name" style="color:${color}">${teamName}</span>
+        </div>`;
+
+        if (goalies.length) {
+            html += `<div class="lu-section-title">🥅 Maalivahti</div>`;
+            for (const g of goalies) {
+                const isStart = g === startGk;
+                const name   = g.athlete?.displayName || '?';
+                const jersey = g.athlete?.jersey || '–';
+                html += `<div class="lu-player${isStart ? ' lu-starter-gk' : ' lu-sub'}">
+                    <span class="lu-jersey">${jersey}</span>
+                    <span class="lu-pos-tag" style="background:${isStart ? color+'33' : 'rgba(148,163,184,0.18)'};color:${isStart ? color : '#64748b'}">MV</span>
+                    <span class="lu-name">${name}</span>
+                    ${isStart ? '<span class="lu-starter-badge">Aloittaa</span>' : ''}
+                </div>`;
+            }
+        }
+
+        if (forwards.length) {
+            html += `<div class="lu-section-title">🏒 Hyökkäysketjut</div>`;
+            for (let i = 0; i < forwards.length; i += 3) {
+                html += `<div class="lu-line-label">${Math.floor(i / 3) + 1}. ketju</div>`;
+                for (const p of forwards.slice(i, i + 3)) {
+                    const pos = p.athlete?.position?.abbreviation || '–';
+                    html += `<div class="lu-player">
+                        <span class="lu-jersey">${p.athlete?.jersey || '–'}</span>
+                        <span class="lu-pos-tag" style="background:${color}22;color:${color}">${pos}</span>
+                        <span class="lu-name">${p.athlete?.displayName || '?'}</span>
+                    </div>`;
+                }
+            }
+        }
+
+        if (defense.length) {
+            html += `<div class="lu-section-title">🛡️ Puolustusparit</div>`;
+            for (let i = 0; i < defense.length; i += 2) {
+                html += `<div class="lu-line-label">${Math.floor(i / 2) + 1}. pari</div>`;
+                for (const p of defense.slice(i, i + 2)) {
+                    html += `<div class="lu-player">
+                        <span class="lu-jersey">${p.athlete?.jersey || '–'}</span>
+                        <span class="lu-pos-tag" style="background:${color}22;color:${color}">D</span>
+                        <span class="lu-name">${p.athlete?.displayName || '?'}</span>
+                    </div>`;
+                }
+            }
+        }
+
+        return `<div class="lu-team">${html}</div>`;
+    };
+
+    const homeName = homeTeam.shortDisplayName || homeTeam.displayName;
+    const awayName = awayTeam.shortDisplayName || awayTeam.displayName;
+    return `<div class="lineup-lists">
+        ${buildTeam(homeBs, homeName, '#0369a1')}
+        ${buildTeam(awayBs, awayName, '#1e40af')}
     </div>`;
+}
+
+async function loadLiigaLineup(div, gameId, homeTeam, awayTeam) {
+    try {
+        const game = liigaGameById[String(gameId)];
+        if (!game) throw new Error('not found');
+
+        // Try to parse players from game object if available
+        const buildLiigaTeam = (teamData, teamName, color) => {
+            const players = teamData.players || teamData.roster || [];
+            if (!players.length) return `<div class="no-events">Ei kokoonpanotietoja</div>`;
+
+            const goalies  = players.filter(p => p.position === 'GK' || p.position === 'G' || p.position === 'MV');
+            const forwards = players.filter(p => ['LW','C','RW','F','H'].includes(p.position));
+            const defense  = players.filter(p => ['D','P'].includes(p.position));
+            const startGk  = goalies[0];
+
+            let html = `<div class="lu-team-header" style="border-color:${color}">
+                <span class="lu-team-name" style="color:${color}">${teamName}</span>
+            </div>`;
+
+            if (goalies.length) {
+                html += `<div class="lu-section-title">🥅 Maalivahti</div>`;
+                for (const g of goalies) {
+                    const isStart = g === startGk;
+                    const name = `${g.firstName || ''} ${g.lastName || g.name || '?'}`.trim();
+                    html += `<div class="lu-player${isStart ? ' lu-starter-gk' : ' lu-sub'}">
+                        <span class="lu-jersey">${g.jerseyNumber || g.jersey || '–'}</span>
+                        <span class="lu-pos-tag" style="background:${isStart ? color+'33' : 'rgba(148,163,184,0.18)'};color:${isStart ? color : '#64748b'}">MV</span>
+                        <span class="lu-name">${name}</span>
+                        ${isStart ? '<span class="lu-starter-badge">Aloittaa</span>' : ''}
+                    </div>`;
+                }
+            }
+            if (forwards.length) {
+                html += `<div class="lu-section-title">🏒 Hyökkäysketjut</div>`;
+                for (let i = 0; i < forwards.length; i += 3) {
+                    html += `<div class="lu-line-label">${Math.floor(i/3)+1}. ketju</div>`;
+                    for (const p of forwards.slice(i, i+3)) {
+                        const name = `${p.firstName || ''} ${p.lastName || p.name || '?'}`.trim();
+                        html += `<div class="lu-player">
+                            <span class="lu-jersey">${p.jerseyNumber || p.jersey || '–'}</span>
+                            <span class="lu-pos-tag" style="background:${color}22;color:${color}">${p.position || '–'}</span>
+                            <span class="lu-name">${name}</span>
+                        </div>`;
+                    }
+                }
+            }
+            if (defense.length) {
+                html += `<div class="lu-section-title">🛡️ Puolustusparit</div>`;
+                for (let i = 0; i < defense.length; i += 2) {
+                    html += `<div class="lu-line-label">${Math.floor(i/2)+1}. pari</div>`;
+                    for (const p of defense.slice(i, i+2)) {
+                        const name = `${p.firstName || ''} ${p.lastName || p.name || '?'}`.trim();
+                        html += `<div class="lu-player">
+                            <span class="lu-jersey">${p.jerseyNumber || p.jersey || '–'}</span>
+                            <span class="lu-pos-tag" style="background:${color}22;color:${color}">D</span>
+                            <span class="lu-name">${name}</span>
+                        </div>`;
+                    }
+                }
+            }
+            return `<div class="lu-team">${html}</div>`;
+        };
+
+        const hasPlayers = (game.homeTeam?.players?.length || game.homeTeam?.roster?.length);
+        if (!hasPlayers) throw new Error('no players');
+
+        div.innerHTML = `<div class="lineup-lists">
+            ${buildLiigaTeam(game.homeTeam, homeTeam.displayName, '#0369a1')}
+            ${buildLiigaTeam(game.awayTeam, awayTeam.displayName, '#1e40af')}
+        </div>`;
+        div.dataset.loaded = '1';
+    } catch {
+        div.innerHTML = '<div class="no-events">Kokoonpanotietoja ei saatavilla</div>';
+        div.dataset.loaded = '1';
+    }
 }
 
 async function loadLineups(div, eventId, league, homeTeam, awayTeam) {
     if (league.isLiiga) {
-        div.innerHTML = '<div class="no-events">Kokoonpanotietoja ei saatavilla</div>';
-        div.dataset.loaded = '1';
-        return;
+        return loadLiigaLineup(div, eventId, homeTeam, awayTeam);
     }
     div.innerHTML = '<div class="spinner-sm"></div>';
     try {
@@ -2099,9 +2265,25 @@ async function loadLineups(div, eventId, league, homeTeam, awayTeam) {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             detailCache[eventId] = await res.json();
         }
-        const data    = detailCache[eventId];
-        const rosters = data.rosters || [];
+        const data = detailCache[eventId];
 
+        if (league.sport === 'hockey') {
+            const bsPlayers = data.boxscore?.players || [];
+            if (!bsPlayers.length) {
+                div.innerHTML = '<div class="no-events">Kokoonpanotietoja ei saatavilla</div>';
+                div.dataset.loaded = '1';
+                return;
+            }
+            const homeBs = bsPlayers.find(t => t.team?.homeAway === 'home')
+                        || bsPlayers.find(t => String(t.team?.id) === String(homeTeam.id));
+            const awayBs = bsPlayers.find(t => t.team?.homeAway === 'away')
+                        || bsPlayers.find(t => String(t.team?.id) === String(awayTeam.id));
+            div.innerHTML = buildHockeyLineup(homeBs, awayBs, homeTeam, awayTeam);
+            div.dataset.loaded = '1';
+            return;
+        }
+
+        const rosters = data.rosters || [];
         if (!rosters.length) {
             div.innerHTML = '<div class="no-events">Kokoonpanotietoja ei saatavilla</div>';
             div.dataset.loaded = '1';
@@ -2110,10 +2292,7 @@ async function loadLineups(div, eventId, league, homeTeam, awayTeam) {
 
         const homeRoster = rosters.find(r => r.homeAway === 'home');
         const awayRoster = rosters.find(r => r.homeAway === 'away');
-
-        div.innerHTML = league.sport === 'soccer'
-            ? buildSoccerPitch(homeRoster, awayRoster, homeTeam, awayTeam)
-            : buildSimpleLineup(homeRoster, awayRoster, homeTeam, awayTeam);
+        div.innerHTML = buildSoccerLineup(homeRoster, awayRoster, homeTeam, awayTeam);
 
         div.dataset.loaded = '1';
     } catch (err) {
@@ -2284,47 +2463,6 @@ function renderEvents(events, containerId, upcoming, league) {
             upcoming ? new Date(a.date) - new Date(b.date)
                      : new Date(b.date) - new Date(a.date));
 
-        const hdr = document.createElement('div');
-        hdr.className = 'matchday-header';
-        hdr.textContent = new Date(day + 'T12:00:00').toLocaleDateString('fi-FI', {
-            weekday:'long', day:'numeric', month:'long', year:'numeric'
-        });
-        el.appendChild(hdr);
-        for (const ev of dayEvents) el.appendChild(createCard(ev, league));
-    }
-}
-
-function renderResultsWithLive(events, hasLive, league) {
-    const el = document.getElementById('results');
-    el.innerHTML = '';
-
-    if (hasLive) {
-        el.innerHTML = `<div class="live-banner">
-            <div class="live-dot"></div>
-            <span>Ottelu käynnissä — <span id="live-countdown">päivitetään 60 sek. kuluttua</span></span>
-        </div>`;
-    }
-
-    if (!events.length) {
-        el.insertAdjacentHTML('beforeend', '<div class="error-msg">Otteluita ei löytynyt.</div>');
-        return;
-    }
-
-    const info = document.createElement('p');
-    info.className = 'section-info';
-    info.textContent = `${events.length} ottelua`;
-    el.appendChild(info);
-
-    const groups = new Map();
-    for (const ev of events) {
-        const day = ev.date.slice(0, 10);
-        if (!groups.has(day)) groups.set(day, []);
-        groups.get(day).push(ev);
-    }
-
-    const days = [...groups.keys()].sort((a, b) => b.localeCompare(a));
-    for (const day of days) {
-        const dayEvents = groups.get(day).sort((a, b) => new Date(b.date) - new Date(a.date));
         const hdr = document.createElement('div');
         hdr.className = 'matchday-header';
         hdr.textContent = new Date(day + 'T12:00:00').toLocaleDateString('fi-FI', {
@@ -2610,38 +2748,6 @@ function renderHockeyStandings(el, data, league) {
     attachTeamStatsHandlers(el, league);
 }
 
-// ── Live auto-refresh ──────────────────────────────────────────────────────
-let liveInterval   = null;
-let liveCountdown  = 60;
-let countdownTimer = null;
-
-function stopLiveRefresh() {
-    clearInterval(liveInterval);
-    clearInterval(countdownTimer);
-    liveInterval = countdownTimer = null;
-}
-
-function startLiveRefresh(league) {
-    if (liveInterval) return;
-    liveCountdown = 60;
-
-    countdownTimer = setInterval(() => {
-        liveCountdown--;
-        const badge = document.getElementById('live-countdown');
-        if (badge) badge.textContent = `Päivitetään ${liveCountdown} sek. kuluttua`;
-        if (liveCountdown <= 0) liveCountdown = 60;
-    }, 1000);
-
-    liveInterval = setInterval(() => {
-        liveCountdown = 60;
-        if (currentTab === 'day') {
-            loadDayView(currentDayDate);
-        } else {
-            refreshResults(league);
-        }
-    }, 60000);
-}
-
 // ── Day view ───────────────────────────────────────────────────────────────
 
 function updateDayLabel(date) {
@@ -2829,7 +2935,6 @@ async function fetchDayEvents(league, date) {
 }
 
 async function loadDayView(date) {
-    stopLiveRefresh();
     updateDayLabel(date);
 
     const el = document.getElementById('day-content');
@@ -2842,7 +2947,6 @@ async function loadDayView(date) {
 
     el.innerHTML = '';
 
-    let hasLive = false;
     let anyEvents = false;
 
     for (let i = 0; i < leagueOrder.length; i++) {
@@ -2871,7 +2975,6 @@ async function loadDayView(date) {
 
         const sortedEvents = events.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
         for (const ev of sortedEvents) {
-            if (ev.competitions[0].status.type.state === 'in') hasLive = true;
             section.appendChild(createCard(ev, league));
         }
 
@@ -2881,38 +2984,6 @@ async function loadDayView(date) {
     if (!anyEvents) {
         el.innerHTML = '<div class="no-events">Ei otteluita valitulla päivällä.</div>';
     }
-
-    if (hasLive) {
-        const banner = document.createElement('div');
-        banner.className = 'live-banner';
-        banner.innerHTML = `<div class="live-dot"></div>
-            <span>Ottelu käynnissä — <span id="live-countdown">päivitetään 60 sek. kuluttua</span></span>`;
-        el.insertBefore(banner, el.firstChild);
-        startLiveRefresh(null);
-    }
-}
-
-async function refreshResults(league) {
-    if (!league || (league.unavailable && !league.isLiiga)) { stopLiveRefresh(); return; }
-    if (league.key !== currentLeagueKey) { stopLiveRefresh(); return; }
-
-    if (league.isLiiga) {
-        await fetchLiigaGames(liigaCurrentSeason(), true);
-        await loadLiigaResults(league);
-        return;
-    }
-
-    try {
-        const to = new Date(), from = new Date();
-        from.setDate(from.getDate() - 35);
-        const events   = await fetchMatches(league, from, to);
-        const live     = events.filter(e => e.competitions[0].status.type.state === 'in');
-        const finished = events.filter(e => e.competitions[0].status.type.state === 'post');
-
-        if (live.length === 0) stopLiveRefresh();
-
-        renderResultsWithLive([...live, ...finished], live.length > 0, league);
-    } catch {}
 }
 
 // ── Player stats ──────────────────────────────────────────────────────────
@@ -3094,7 +3165,7 @@ async function loadLiigaMatchStats(panel, gameId) {
             if (ge.period !== curPeriod) {
                 curPeriod = ge.period;
                 const lbl = ge.period <= 3 ? `${ge.period}. erä` : 'Jatkoaika / VL';
-                tlHTML += `<div class="tl-period">${lbl}</div>`;
+                tlHTML += `<div class="tl-period"><span class="tl-period-label">${lbl}</span></div>`;
             }
             const mins    = Math.floor(ge.gameTime / 60);
             const secs    = String(ge.gameTime % 60).padStart(2, '0');
@@ -3104,14 +3175,25 @@ async function loadLiigaMatchStats(panel, gameId) {
                 ? `${ge.scorerPlayer.firstName} ${ge.scorerPlayer.lastName}${types ? ' (' + types + ')' : ''}`
                 : '?';
             const assists = (ge.assistantPlayers || []).map(a => `${a.firstName} ${a.lastName}`).join(', ');
-            const score   = `${ge.homeTeamScore}–${ge.awayTeamScore}`;
-            const cellHTML = `<div class="tl-player">${scorer}</div>
-                ${assists ? `<div class="tl-assist">↳ ${assists}</div>` : ''}`;
-            tlHTML += `<div class="tl-event">
-                <div class="tl-home">${ge.isHome  ? cellHTML : ''}</div>
-                <div class="tl-center"><span class="tl-icon">🏒</span><span class="tl-min">${timeStr} (${score})</span></div>
-                <div class="tl-away">${!ge.isHome ? cellHTML : ''}</div>
+            const hDisp   = ge.isHome  ? `<b>${ge.homeTeamScore}</b>` : ge.homeTeamScore;
+            const aDisp   = !ge.isHome ? `<b>${ge.awayTeamScore}</b>` : ge.awayTeamScore;
+            const chip    = `<span class="tl-score-chip">${hDisp}–${aDisp}</span>`;
+            const bodyHTML = `<div class="tl-event-body">
+                <div class="tl-player">${scorer}</div>
+                ${assists ? `<div class="tl-assist">↳ ${assists}</div>` : ''}
+                <div class="tl-min">${timeStr}</div>
             </div>`;
+            if (ge.isHome) {
+                tlHTML += `<div class="tl-event">
+                    <div class="tl-home-col"><div class="tl-marker">${chip}</div>${bodyHTML}</div>
+                    <div class="tl-away-col"></div>
+                </div>`;
+            } else {
+                tlHTML += `<div class="tl-event">
+                    <div class="tl-home-col"></div>
+                    <div class="tl-away-col">${bodyHTML}<div class="tl-marker">${chip}</div></div>
+                </div>`;
+            }
         }
         if (!allGoals.length) tlHTML += '<div class="no-events">Ei maaleja kirjattu</div>';
         tlHTML += '</div>';
