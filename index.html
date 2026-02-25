@@ -555,20 +555,21 @@
         .tl-player {
             font-weight: 600;
             color: var(--text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 160px;
             line-height: 1.3;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .tl-player.tl-sub-off {
+            font-weight: 500;
+            color: var(--muted);
         }
 
         .tl-assist {
             font-size: 0.82em;
             color: var(--muted);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 160px;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         .tl-min {
@@ -972,7 +973,6 @@
 
         @media (max-width: 520px) {
             .tl-event { font-size: 0.74em; }
-            .tl-player, .tl-assist { max-width: 110px; }
             .fpl-row { grid-template-columns: 30px 1fr 32px 22px 22px 22px 22px 22px 30px; font-size: 0.7em; }
         }
 
@@ -1675,29 +1675,31 @@ function buildTimeline(keyEvents, homeTeamId, sport) {
         }
 
         // Content: player, assist, time
-        let playerText = '', assistText = '';
+        let playerHTML = '', assistText = '';
         if (type === 'substitution') {
             const pOn  = parts[0]?.athlete?.displayName ?? '?';
             const pOff = parts[1]?.athlete?.displayName ?? '';
-            playerText = `▲ ${pOn}${pOff ? ` / ▼ ${pOff}` : ''}`;
+            playerHTML = `<div class="tl-player">▲ ${pOn}</div>`
+                       + (pOff ? `<div class="tl-player tl-sub-off">▼ ${pOff}</div>` : '');
         } else if (isNHLPenalty) {
-            playerText = parts[0]?.athlete?.displayName ?? '';
+            const name    = parts[0]?.athlete?.displayName ?? '';
             const penName = e.type?.text || '';
             const penMins = e.type?.penaltyMinutes || '';
+            playerHTML = `<div class="tl-player">${name}</div>`;
             assistText = `${penName}${penMins ? ' (' + penMins + ' min)' : ''}`;
         } else {
             const scorer = (parts.find(p => p.type === 'scorer') ?? parts[0])?.athlete?.displayName ?? '';
             const a1     = (parts.find(p => p.type === 'assister') ?? parts[1])?.athlete?.displayName ?? '';
             const a2     = parts.filter(p => p.type === 'assister')[1]?.athlete?.displayName ?? '';
-            playerText   = scorer + (isOwnGoal ? ' (om)' : '');
+            playerHTML   = `<div class="tl-player">${scorer}${isOwnGoal ? ' (om)' : ''}</div>`;
             const showA  = (a1 || a2) && (isScoring || ['goal','penalty-goal'].includes(type));
             assistText   = showA ? [a1, a2].filter(Boolean).join(', ') : '';
         }
 
         const bodyHTML = `<div class="tl-event-body">
-            ${playerText ? `<div class="tl-player">${playerText}</div>` : ''}
+            ${playerHTML}
             ${assistText ? `<div class="tl-assist">↳ ${assistText}</div>` : ''}
-            ${min       ? `<div class="tl-min">${min}</div>` : ''}
+            ${min        ? `<div class="tl-min">${min}</div>` : ''}
         </div>`;
 
         if (isHome) {
@@ -2039,7 +2041,11 @@ function buildSoccerLineup(homeRoster, awayRoster, homeTeam, awayTeam) {
         }
 
         const subTime = (p) => {
-            const c = p.plays?.[0]?.clock;
+            const plays = p.plays || [];
+            // Find the substitution play specifically, not e.g. a goal play
+            const subPlay = plays.find(pl => pl.substitution === true)
+                         || plays.find(pl => pl.type?.text?.toLowerCase().includes('sub'));
+            const c = subPlay?.clock;
             if (!c) return '';
             const val = typeof c === 'string' ? c : (c.displayValue || c.value || '');
             return val ? ` ${val}` : '';
