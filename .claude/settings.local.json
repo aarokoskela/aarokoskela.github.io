@@ -5,7 +5,8 @@
       "Bash(head:*)",
       "Bash(python3:*)",
       "Bash(open:*)",
-      "WebFetch(domain:site.api.espn.com)"
+      "WebFetch(domain:site.api.espn.com)",
+      "WebFetch(domain:www.liiga.fi)"
     ]
   }
 }

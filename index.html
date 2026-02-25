@@ -1224,11 +1224,12 @@
 
         /* League section in day view */
         .league-section { margin-bottom:20px; }
-        .league-section-header { display:flex; align-items:center; gap:8px; font-size:0.7em;
-            text-transform:uppercase; letter-spacing:1.5px; color:var(--muted);
-            margin:20px 0 8px; font-weight:700; }
+        .league-section-header { display:flex; align-items:center; gap:8px; font-size:0.75em;
+            text-transform:uppercase; letter-spacing:1.8px; color:var(--text);
+            margin:28px 0 8px; font-weight:800; }
         .league-section-header img { width:20px; height:20px; object-fit:contain; flex-shrink:0; }
-        .league-section-header::after { content:''; flex:1; height:1px; background:var(--card-border); }
+        .league-section-header::after { content:''; flex:1; height:2px;
+            background:linear-gradient(90deg, var(--accent), transparent); border-radius:2px; }
 
         /* ── Ipa & ManU kuukausi/päivä-otsikot ── */
         .ipa-month-header {
@@ -2052,9 +2053,6 @@ function buildSoccerLineup(homeRoster, awayRoster, homeTeam, awayTeam) {
         };
 
         const playerRow = (p, isSub) => {
-            const pos      = p.athlete?.position?.abbreviation || '–';
-            const bg       = isSub ? 'rgba(148,163,184,0.15)' : `${color}22`;
-            const clr      = isSub ? '#64748b' : color;
             const subbedOut = !isSub && p.subbedOut;
             const subbedIn  = isSub  && p.subbedIn;
             const subMark   = subbedOut
@@ -2064,7 +2062,6 @@ function buildSoccerLineup(homeRoster, awayRoster, homeTeam, awayTeam) {
                 : '';
             return `<div class="lu-player${isSub ? ' lu-sub' : ''}">
                 <span class="lu-jersey">${p.jersey || '–'}</span>
-                <span class="lu-pos-tag" style="background:${bg};color:${clr}">${pos}</span>
                 <span class="lu-name">${p.athlete?.displayName || '?'}</span>
                 ${subMark}
             </div>`;
@@ -2078,7 +2075,6 @@ function buildSoccerLineup(homeRoster, awayRoster, homeTeam, awayTeam) {
 
         for (let i = 0; i < 4; i++) {
             if (!groups[i].length) continue;
-            html += `<div class="lu-pos-label">${SOCCER_POS_LABEL[i]}</div>`;
             html += groups[i].map(p => playerRow(p, false)).join('');
         }
 
@@ -2189,6 +2185,12 @@ async function loadLiigaLineup(div, gameId, homeTeam, awayTeam) {
         if (!game) throw new Error('not found');
 
         // Try to parse players from game object if available
+        const liigaName = p => {
+            const fn = (p.firstName || '').split('-').map(s => s.charAt(0) + s.slice(1).toLowerCase()).join('-');
+            const ln = (p.lastName  || p.name || '').split('-').map(s => s.charAt(0) + s.slice(1).toLowerCase()).join('-');
+            return `${fn} ${ln}`.trim() || '?';
+        };
+
         const buildLiigaTeam = (teamData, teamName, color) => {
             const players = teamData.players || teamData.roster || [];
             if (!players.length) return `<div class="no-events">Ei kokoonpanotietoja</div>`;
@@ -2206,11 +2208,10 @@ async function loadLiigaLineup(div, gameId, homeTeam, awayTeam) {
                 html += `<div class="lu-section-title">🥅 Maalivahti</div>`;
                 for (const g of goalies) {
                     const isStart = g === startGk;
-                    const name = `${g.firstName || ''} ${g.lastName || g.name || '?'}`.trim();
                     html += `<div class="lu-player${isStart ? ' lu-starter-gk' : ' lu-sub'}">
                         <span class="lu-jersey">${g.jerseyNumber || g.jersey || '–'}</span>
                         <span class="lu-pos-tag" style="background:${isStart ? color+'33' : 'rgba(148,163,184,0.18)'};color:${isStart ? color : '#64748b'}">MV</span>
-                        <span class="lu-name">${name}</span>
+                        <span class="lu-name">${liigaName(g)}</span>
                         ${isStart ? '<span class="lu-starter-badge">Aloittaa</span>' : ''}
                     </div>`;
                 }
@@ -2220,11 +2221,10 @@ async function loadLiigaLineup(div, gameId, homeTeam, awayTeam) {
                 for (let i = 0; i < forwards.length; i += 3) {
                     html += `<div class="lu-line-label">${Math.floor(i/3)+1}. ketju</div>`;
                     for (const p of forwards.slice(i, i+3)) {
-                        const name = `${p.firstName || ''} ${p.lastName || p.name || '?'}`.trim();
                         html += `<div class="lu-player">
                             <span class="lu-jersey">${p.jerseyNumber || p.jersey || '–'}</span>
                             <span class="lu-pos-tag" style="background:${color}22;color:${color}">${p.position || '–'}</span>
-                            <span class="lu-name">${name}</span>
+                            <span class="lu-name">${liigaName(p)}</span>
                         </div>`;
                     }
                 }
@@ -2234,11 +2234,10 @@ async function loadLiigaLineup(div, gameId, homeTeam, awayTeam) {
                 for (let i = 0; i < defense.length; i += 2) {
                     html += `<div class="lu-line-label">${Math.floor(i/2)+1}. pari</div>`;
                     for (const p of defense.slice(i, i+2)) {
-                        const name = `${p.firstName || ''} ${p.lastName || p.name || '?'}`.trim();
                         html += `<div class="lu-player">
                             <span class="lu-jersey">${p.jerseyNumber || p.jersey || '–'}</span>
                             <span class="lu-pos-tag" style="background:${color}22;color:${color}">D</span>
-                            <span class="lu-name">${name}</span>
+                            <span class="lu-name">${liigaName(p)}</span>
                         </div>`;
                     }
                 }
@@ -2317,7 +2316,7 @@ function createCard(ev, league) {
     const isLive    = status.state === 'in';
     const matchMs   = new Date(ev.date).getTime();
     const canStats  = isPost || isLive;
-    const canLineup = canStats || (isPre && matchMs - Date.now() <= 10 * 60 * 1000);
+    const canLineup = !league.isLiiga && (canStats || (isPre && matchMs - Date.now() <= 10 * 60 * 1000));
     const canBtn    = canStats || canLineup;
     const hasFPL    = !!(league.hasFPL && canStats);
 
@@ -3160,9 +3159,14 @@ async function loadLiigaMatchStats(panel, gameId) {
         const game = liigaGameById[String(gameId)];
         if (!game) throw new Error('Pelin tietoja ei löydy');
 
+        const toName = s => s ? s.split('-').map(p => p.charAt(0) + p.slice(1).toLowerCase()).join('-') : '';
+        const fmtPlayer = p => p ? `${toName(p.firstName)} ${toName(p.lastName)}` : '?';
+
+        const isDisallowed = ge => (ge.goalTypes || []).includes('RL0');
+
         const allGoals = [];
-        for (const ge of (game.homeTeam.goalEvents || [])) allGoals.push({ ...ge, isHome: true });
-        for (const ge of (game.awayTeam.goalEvents || [])) allGoals.push({ ...ge, isHome: false });
+        for (const ge of (game.homeTeam.goalEvents || [])) if (!isDisallowed(ge)) allGoals.push({ ...ge, isHome: true });
+        for (const ge of (game.awayTeam.goalEvents || [])) if (!isDisallowed(ge)) allGoals.push({ ...ge, isHome: false });
         allGoals.sort((a, b) => (a.period - b.period) || (a.gameTime - b.gameTime));
 
         let tlHTML = '<div class="timeline">';
@@ -3177,10 +3181,9 @@ async function loadLiigaMatchStats(panel, gameId) {
             const secs    = String(ge.gameTime % 60).padStart(2, '0');
             const timeStr = `${mins}:${secs}`;
             const types   = (ge.goalTypes || []).join(', ');
-            const scorer  = ge.scorerPlayer
-                ? `${ge.scorerPlayer.firstName} ${ge.scorerPlayer.lastName}${types ? ' (' + types + ')' : ''}`
-                : '?';
-            const assists = (ge.assistantPlayers || []).map(a => `${a.firstName} ${a.lastName}`).join(', ');
+            if (!ge.scorerPlayer) continue;
+            const scorer  = `${fmtPlayer(ge.scorerPlayer)}${types ? ' (' + types + ')' : ''}`;
+            const assists = (ge.assistantPlayers || []).map(fmtPlayer).join(', ');
             const hDisp   = ge.isHome  ? `<b>${ge.homeTeamScore}</b>` : ge.homeTeamScore;
             const aDisp   = !ge.isHome ? `<b>${ge.awayTeamScore}</b>` : ge.awayTeamScore;
             const chip    = `<span class="tl-score-chip">${hDisp}–${aDisp}</span>`;
