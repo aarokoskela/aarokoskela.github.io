@@ -294,6 +294,12 @@
             gap: 8px;
             font-weight: 500;
         }
+        .match-start-time {
+            font-size: 1em;
+            font-weight: 600;
+            color: var(--muted);
+            opacity: 0.85;
+        }
 
         .match-status {
             font-size: 0.76em;
@@ -2355,7 +2361,7 @@ function createCard(ev, league) {
     card.className = 'match-card' + (canBtn ? ' has-btns' : '');
 
     card.innerHTML = `
-        ${isLive ? `<div class="match-meta"><span class="match-status ${statusClass}">${statusText}</span></div>` : ''}
+        ${(isLive || isPost) ? `<div class="match-meta"><span class="match-start-time">${fmtTime(ev.date)}</span>${isLive ? `<span class="match-status ${statusClass}">${statusText}</span>` : ''}</div>` : ''}
         <div class="match-teams">
             <div class="team">
                 <div class="team-logo">
@@ -2945,7 +2951,25 @@ async function fetchDayEvents(league, date) {
         });
         return dayMatches.map(liigaToESPN).filter(Boolean);
     }
-    return fetchMatches(league, date, date);
+    // ESPN tallentaa pelit US-aikavyöhykkeen mukaan. Suomen ajassa illalla/yöllä
+    // pelatut ottelut (esim. klo 02:00 Suomea = klo 19:00 ET edellisenä päivänä)
+    // löytyvät ESPN:stä edellisen päivän hakutuloksista. Haetaan siksi molemmat
+    // päivät ja filtteröidään Suomen paikallisen ajan mukaan.
+    const prevDate = new Date(date);
+    prevDate.setDate(prevDate.getDate() - 1);
+    const [prevEvents, todayEvents] = await Promise.all([
+        fetchMatches(league, prevDate, prevDate),
+        fetchMatches(league, date, date)
+    ]);
+    const allEvents = [...prevEvents, ...todayEvents];
+    const dayStr = toESPNDate(date);
+    const seen = new Set();
+    return allEvents.filter(ev => {
+        if (seen.has(ev.id)) return false;
+        seen.add(ev.id);
+        // Käytetään paikallista aikaa (Suomi UTC+2) päivämäärän vertailuun
+        return toESPNDate(new Date(ev.date)) === dayStr;
+    });
 }
 
 async function loadDayView(date) {
