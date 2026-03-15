@@ -6,7 +6,12 @@
       "Bash(python3:*)",
       "Bash(open:*)",
       "WebFetch(domain:site.api.espn.com)",
-      "WebFetch(domain:www.liiga.fi)"
+      "WebFetch(domain:www.liiga.fi)",
+      "Bash(git checkout:*)",
+      "Bash(npm install:*)",
+      "Bash(command -v node)",
+      "Read(//Users/aarokoskela/.nvm/**)",
+      "Read(//usr/local/**)"
     ]
   }
 }
