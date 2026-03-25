@@ -15,6 +15,182 @@ function teamUrl(league, teamId) {
     return `https://site.api.espn.com/apis/site/v2/sports/${league.sport}/${league.id}/teams/${teamId}`;
 }
 
+// ── NHL Official API (proxattu /nhl-api/ kautta CORS:n takia) ────────────
+const NHL_PROXY = '/nhl-api/';
+
+function toNHLDateStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+async function fetchNHLGames(date) {
+    const prev = new Date(date);
+    prev.setDate(prev.getDate() - 1);
+    const safe = url => fetch(url).then(r => r.ok ? r.json() : { games: [] }).catch(() => ({ games: [] }));
+    const [a, b] = await Promise.all([
+        safe(`${NHL_PROXY}score/${toNHLDateStr(prev)}`),
+        safe(`${NHL_PROXY}score/${toNHLDateStr(date)}`),
+    ]);
+    const dayStr = toESPNDate(date);
+    const seen = new Set();
+    return [...(a.games || []), ...(b.games || [])].filter(g => {
+        if (seen.has(g.id)) return false;
+        seen.add(g.id);
+        return toESPNDate(new Date(g.startTimeUTC)) === dayStr;
+    });
+}
+
+function nhlGameToESPN(game) {
+    const ht = game.homeTeam;
+    const at = game.awayTeam;
+    const state = game.gameState;
+    const period = game.period || 0;
+    const pt = game.periodDescriptor?.periodType;
+    let snapState, shortDetail, displayClock;
+    if (state === 'FUT' || state === 'PRE') {
+        snapState = 'pre'; shortDetail = ''; displayClock = '';
+    } else if (state === 'FINAL' || state === 'OFF') {
+        snapState = 'post';
+        shortDetail = pt === 'OT' ? 'JA' : pt === 'SO' ? 'VL' : 'Lopputulos';
+        displayClock = '';
+    } else {
+        snapState = 'in';
+        shortDetail = pt === 'OT' ? 'Jatkoaika' : pt === 'SO' ? 'Voittolaukaukset' : `${period}. erä`;
+        displayClock = game.clock?.timeRemaining || '';
+    }
+    const teamObj = t => ({
+        id:               String(t.id),
+        displayName:      t.name?.default || t.commonName?.default || t.abbrev,
+        shortDisplayName: t.commonName?.default || t.abbrev,
+        logo:             t.logo || '',
+    });
+    return {
+        id:   String(game.id),
+        date: game.startTimeUTC,
+        competitions: [{
+            competitors: [
+                { homeAway:'home', team: teamObj(ht), score: String(ht.score ?? 0) },
+                { homeAway:'away', team: teamObj(at), score: String(at.score ?? 0) },
+            ],
+            status: { type: { state: snapState, shortDetail, detail: shortDetail, displayClock } },
+            venue: game.venue ? { fullName: game.venue.default || '' } : null,
+        }],
+    };
+}
+
+// ── SHL API ───────────────────────────────────────────────────────────────
+const SHL_PROXY    = '/shl-api/';
+const SHL_SEASON   = 'xs4m9qupsi';
+const SHL_SERIES   = 'qQ9-bb0bzEWUk';
+const SHL_TYPES    = ['qQ9-af37Ti40B', 'qQ9-7debq38kX']; // runkosarja + playoffs
+
+const shlGamesCache = {}; // gameTypeUuid → { data, ts }
+
+async function fetchAllSHLGames() {
+    const now = Date.now();
+    const results = await Promise.all(SHL_TYPES.map(async gt => {
+        const cached = shlGamesCache[gt];
+        if (cached && now - cached.ts < 60_000) return cached.data;
+        const res = await fetch(`${SHL_PROXY}sports-v2/game-schedule?seasonUuid=${SHL_SEASON}&seriesUuid=${SHL_SERIES}&gameTypeUuid=${gt}`);
+        const data = res.ok ? await res.json() : { gameInfo: [] };
+        shlGamesCache[gt] = { data: data.gameInfo || [], ts: now };
+        return data.gameInfo || [];
+    }));
+    return results.flat();
+}
+
+async function fetchSHLGames(date) {
+    const games = await fetchAllSHLGames();
+    const dayStr = toNHLDateStr(date);
+    return games.filter(g => {
+        if (!g.rawStartDateTime) return false;
+        const d = new Date(g.rawStartDateTime);
+        return toNHLDateStr(d) === dayStr;
+    });
+}
+
+function shlGameToESPN(game) {
+    const ht = game.homeTeamInfo;
+    const at = game.awayTeamInfo;
+    const state = game.state;
+    let snapState, shortDetail;
+    if (state === 'pre-game') {
+        snapState = 'pre'; shortDetail = '';
+    } else if (state === 'post-game') {
+        snapState = 'post';
+        shortDetail = game.overtime ? 'JA' : game.shootout ? 'VL' : 'Lopputulos';
+    } else {
+        snapState = 'in'; shortDetail = 'Live';
+    }
+    const teamObj = t => ({
+        id:               t.uuid,
+        displayName:      t.names?.long || t.names?.short || t.code,
+        shortDisplayName: t.names?.short || t.code,
+        logo:             t.icon || '',
+    });
+    return {
+        id:   game.uuid,
+        date: game.rawStartDateTime,
+        competitions: [{
+            competitors: [
+                { homeAway:'home', team: teamObj(ht), score: String(ht.score ?? 0) },
+                { homeAway:'away', team: teamObj(at), score: String(at.score ?? 0) },
+            ],
+            status: { type: { state: snapState, shortDetail, detail: shortDetail, displayClock: '' } },
+            venue: game.venueInfo ? { fullName: game.venueInfo.name || '' } : null,
+        }],
+    };
+}
+
+// ── NLA API ───────────────────────────────────────────────────────────────
+const NLA_PROXY = '/nla-api/';
+
+let nlaGamesCache = null;
+let nlaGamesCacheTs = 0;
+
+function nlaSeason(date) {
+    return date.getMonth() >= 7 ? date.getFullYear() + 1 : date.getFullYear();
+}
+
+async function fetchNLAGames(date) {
+    const now = Date.now();
+    if (!nlaGamesCache || now - nlaGamesCacheTs > 60_000) {
+        const season = nlaSeason(date);
+        const res = await fetch(`${NLA_PROXY}games?season=${season}`);
+        nlaGamesCache = res.ok ? await res.json() : [];
+        nlaGamesCacheTs = now;
+    }
+    const dayStr = toNHLDateStr(date);
+    return nlaGamesCache.filter(g => {
+        if (g.status === 'canceled') return false;
+        return toNHLDateStr(new Date(g.date)) === dayStr;
+    });
+}
+
+function nlaGameToESPN(game) {
+    const s = game.status;
+    let snapState, shortDetail;
+    if (s === 'finished') {
+        snapState = 'post';
+        shortDetail = game.isOvertime ? 'JA' : game.isShootout ? 'VL' : 'Lopputulos';
+    } else if (s === 'live' || s === 'inProgress') {
+        snapState = 'in'; shortDetail = 'Live';
+    } else {
+        snapState = 'pre'; shortDetail = '';
+    }
+    return {
+        id:   String(game.gameId),
+        date: game.date,
+        competitions: [{
+            competitors: [
+                { homeAway:'home', team:{ id: String(game.homeTeamId), displayName: game.homeTeamName, shortDisplayName: game.homeTeamShortName, logo: '' }, score: String(game.homeTeamResult ?? 0) },
+                { homeAway:'away', team:{ id: String(game.awayTeamId), displayName: game.awayTeamName, shortDisplayName: game.awayTeamShortName, logo: '' }, score: String(game.awayTeamResult ?? 0) },
+            ],
+            status: { type: { state: snapState, shortDetail, detail: shortDetail, displayClock: '' } },
+            venue: game.arena ? { fullName: game.arena } : null,
+        }],
+    };
+}
+
 // ── Scoreboard fetch ───────────────────────────────────────────────────────
 async function fetchMatches(league, from, to) {
     const url = scoreboardUrl(league, from, to);

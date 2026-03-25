@@ -70,8 +70,179 @@ function buildStats(bsTeams, homeTeam, awayTeam, sport) {
     return hasAny ? html : '';
 }
 
+const nhlGameCache = {};
+
+async function loadNHLMatchStats(panel, gameId, homeTeam, awayTeam) {
+    const content = panel.querySelector('.stats-content');
+    content.innerHTML = '<div class="spinner-sm"></div>';
+    try {
+        const gid = String(gameId);
+        if (!nhlGameCache[gid]) {
+            const [pbp, box] = await Promise.all([
+                fetch(`${NHL_PROXY}gamecenter/${gid}/play-by-play`).then(r => r.ok ? r.json() : null),
+                fetch(`${NHL_PROXY}gamecenter/${gid}/boxscore`).then(r => r.ok ? r.json() : null),
+            ]);
+            nhlGameCache[gid] = { pbp, box };
+        }
+        const { pbp, box } = nhlGameCache[gid];
+
+        // Roster lookup
+        const roster = {};
+        for (const p of (pbp?.rosterSpots || [])) {
+            const fn = typeof p.firstName === 'string' ? p.firstName : (p.firstName?.default || '');
+            const ln = typeof p.lastName  === 'string' ? p.lastName  : (p.lastName?.default  || '');
+            roster[p.playerId] = `${fn} ${ln}`.trim();
+        }
+
+        const homeId = String(pbp?.homeTeam?.id ?? homeTeam.id);
+
+        const SHOW = new Set(['goal', 'penalty']);
+        const plays = (pbp?.plays || []).filter(p => SHOW.has(p.typeDescKey));
+
+        let tlHTML = '<div class="timeline">';
+        let curPeriod = null;
+
+        for (const play of plays) {
+            const period = play.period;
+            const pt     = play.periodDescriptor?.periodType;
+            const isHome = String(play.details?.eventOwnerTeamId) === homeId;
+            const timeStr = play.timeInPeriod || '';
+
+            if (period !== curPeriod) {
+                curPeriod = period;
+                const lbl = pt === 'OT' ? 'Jatkoaika'
+                          : pt === 'SO' ? 'Voittolaukauskilpailu'
+                          : `${period}. erä`;
+                tlHTML += `<div class="tl-period"><span class="tl-period-label">${lbl}</span></div>`;
+            }
+
+            if (play.typeDescKey === 'goal') {
+                const d = play.details || {};
+                const scorer  = roster[d.scoringPlayerId] || '?';
+                const a1      = d.assist1PlayerId ? roster[d.assist1PlayerId] : '';
+                const a2      = d.assist2PlayerId ? roster[d.assist2PlayerId] : '';
+                const assists = [a1, a2].filter(Boolean).join(', ');
+                const hScore  = d.homeScore ?? 0;
+                const aScore  = d.awayScore ?? 0;
+                const hDisp   = isHome ? `<b>${hScore}</b>` : hScore;
+                const aDisp   = isHome ? aScore : `<b>${aScore}</b>`;
+                const chipCls = isHome ? 'tl-chip-home' : 'tl-chip-away';
+                const chip    = `<span class="tl-score-chip ${chipCls}">${hDisp}–${aDisp}</span>`;
+                const body    = `<div class="tl-event-body">
+                    <div class="tl-player">${scorer}</div>
+                    ${assists  ? `<div class="tl-assist">↳ ${assists}</div>` : ''}
+                    ${timeStr  ? `<div class="tl-min">${timeStr}</div>` : ''}
+                </div>`;
+                if (isHome) {
+                    tlHTML += `<div class="tl-event tl-type-goal">
+                        <div class="tl-home-col"><div class="tl-marker">${chip}</div>${body}</div>
+                        <div class="tl-away-col"></div></div>`;
+                } else {
+                    tlHTML += `<div class="tl-event tl-type-goal">
+                        <div class="tl-home-col"></div>
+                        <div class="tl-away-col">${body}<div class="tl-marker">${chip}</div></div></div>`;
+                }
+            } else if (play.typeDescKey === 'penalty') {
+                const d       = play.details || {};
+                const player  = roster[d.committedByPlayerId] || '';
+                const penType = d.descKey ? d.descKey.replace(/-/g, ' ') : '';
+                const dur     = d.duration ? `${d.duration} min` : '';
+                const label   = [penType, dur].filter(Boolean).join(' — ');
+                const body    = `<div class="tl-event-body">
+                    ${player ? `<div class="tl-player">${player}</div>` : ''}
+                    ${label  ? `<div class="tl-assist">${label}</div>` : ''}
+                    ${timeStr ? `<div class="tl-min">${timeStr}</div>` : ''}
+                </div>`;
+                if (isHome) {
+                    tlHTML += `<div class="tl-event tl-type-penalty">
+                        <div class="tl-home-col"><div class="tl-marker">⛔</div>${body}</div>
+                        <div class="tl-away-col"></div></div>`;
+                } else {
+                    tlHTML += `<div class="tl-event tl-type-penalty">
+                        <div class="tl-home-col"></div>
+                        <div class="tl-away-col">${body}<div class="tl-marker">⛔</div></div></div>`;
+                }
+            }
+        }
+        if (!plays.length) tlHTML += '<div class="no-events">Ei kirjattuja tapahtumia</div>';
+        tlHTML += '</div>';
+
+        // Box stats
+        const NHL_STATS = {
+            sog:                 { label:'Laukaukset',          isPct:false },
+            faceoffWinningPctg:  { label:'Aloitusvoitot %',     isPct:true  },
+            powerPlayConversion: { label:'Ylivoimateho',        isStr:true  },
+            pim:                 { label:'Rangaistusmin.',      isPct:false },
+            hits:                { label:'Taklaukset',          isPct:false },
+            blockedShots:        { label:'Blokatut laukaukset', isPct:false },
+        };
+        const hName = homeTeam.shortDisplayName || homeTeam.displayName;
+        const aName = awayTeam.shortDisplayName || awayTeam.displayName;
+        let statsHTML = '';
+        const tgs = box?.teamGameStats || [];
+        if (tgs.length) {
+            let statRows = `<div class="stats-teams">
+                <span class="home-label"><span class="team-dot home-dot"></span>${hName}</span>
+                <span class="away-label">${aName}<span class="team-dot away-dot"></span></span>
+            </div>`;
+            let hasAny = false;
+            for (const s of tgs) {
+                const def = NHL_STATS[s.category];
+                if (!def) continue;
+                hasAny = true;
+                if (def.isStr) {
+                    statRows += `<div class="stat-row"><div class="stat-row-head">
+                        <span class="stat-val home-v">${s.homeValue}</span>
+                        <span class="stat-label">${def.label}</span>
+                        <span class="stat-val away-v">${s.awayValue}</span>
+                    </div></div>`;
+                } else {
+                    const hV    = def.isPct ? (s.homeValue * 100) : s.homeValue;
+                    const aV    = def.isPct ? (s.awayValue * 100) : s.awayValue;
+                    const total = hV + aV;
+                    const hPct  = def.isPct ? Math.round(hV) : (total === 0 ? 50 : Math.round(hV / total * 100));
+                    const aPct  = 100 - hPct;
+                    const hDisp = def.isPct ? hV.toFixed(1) + '%' : hV;
+                    const aDisp = def.isPct ? aV.toFixed(1) + '%' : aV;
+                    statRows += `<div class="stat-row">
+                        <div class="stat-row-head">
+                            <span class="stat-val home-v">${hDisp}</span>
+                            <span class="stat-label">${def.label}</span>
+                            <span class="stat-val away-v">${aDisp}</span>
+                        </div>
+                        <div class="stat-bar-track">
+                            <div class="bar-h" style="width:${hPct}%"></div>
+                            <div class="bar-a" style="width:${aPct}%"></div>
+                        </div>
+                    </div>`;
+                }
+            }
+            if (hasAny) statsHTML = statRows;
+        }
+
+        content.innerHTML = `
+            <div class="details-section">
+                <div class="details-title">🏒 Tapahtumat</div>
+                ${tlHTML}
+            </div>
+            ${statsHTML ? `<div class="details-section">
+                <div class="details-title">📊 Tilastot</div>
+                ${statsHTML}
+            </div>` : ''}`;
+        panel.dataset.loaded = '1';
+    } catch (err) {
+        content.innerHTML = `<div class="details-error">Virhe: ${err.message}</div>`;
+    }
+}
+
 async function loadMatchStats(panel, eventId, homeTeam, awayTeam, league) {
     if (league.isLiiga) { return loadLiigaMatchStats(panel, eventId); }
+    if (league.isNHL)   { return loadNHLMatchStats(panel, eventId, homeTeam, awayTeam); }
+    if (league.isSHL || league.isNLA) {
+        panel.querySelector('.stats-content').innerHTML = '<div class="no-events">Ottelukohtaisia tilastoja ei saatavilla.</div>';
+        panel.dataset.loaded = '1';
+        return;
+    }
     const content = panel.querySelector('.stats-content');
     content.innerHTML = '<div class="spinner-sm"></div>';
     try {

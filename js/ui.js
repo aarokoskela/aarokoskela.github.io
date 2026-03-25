@@ -18,6 +18,9 @@ function showTab(tab, btn) {
     document.getElementById(tab).classList.add('active');
     currentTab = tab;
 
+    // Customize-välilehti renderöidään aina uudelleen
+    if (tab === 'customize') { loadCustomizeTab(); return; }
+
     // Lazy load if still showing spinner
     const el = document.getElementById(tab);
     if (el.querySelector('.loading')) {
@@ -31,6 +34,7 @@ function loadTabContent(tab, league) {
         case 'standings':   loadStandings(league);       break;
         case 'playerstats': loadPlayerStats(league);     break;
         case 'ipa-manu':    loadIpaManUTab();             break;
+        case 'customize':   loadCustomizeTab();           break;
     }
 }
 

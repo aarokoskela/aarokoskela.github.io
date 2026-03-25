@@ -1375,3 +1375,45 @@
             background: #f59e0b;
             box-shadow: 0 0 0 3px rgba(245,158,11,0.25);
         }
+
+        /* ── Customize-välilehti ──────────────────────────────────────────── */
+        .cz-list { max-width: 480px; margin: 24px auto 0; }
+        .cz-group-label {
+            font-size: 0.72em; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--muted);
+            margin: 20px 0 8px 4px;
+        }
+        .cz-group-label:first-child { margin-top: 4px; }
+        .cz-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px;
+            background: var(--card-bg);
+            border-radius: 12px; margin-bottom: 8px;
+            border: 1px solid var(--border);
+            transition: opacity 0.2s;
+        }
+        .cz-row-off { opacity: 0.45; }
+        .cz-logo { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
+        .cz-logo-placeholder { font-size: 1.2em; width: 28px; text-align: center; flex-shrink: 0; }
+        .cz-name { flex: 1; font-weight: 600; font-size: 0.9em; }
+        .cz-toggle {
+            position: relative; display: inline-block;
+            width: 44px; height: 24px; flex-shrink: 0;
+        }
+        .cz-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .cz-slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background: rgba(0,0,0,0.15); border-radius: 24px; transition: 0.25s;
+        }
+        .cz-slider::before {
+            content: ''; position: absolute;
+            height: 18px; width: 18px; left: 3px; top: 3px;
+            background: #fff; border-radius: 50%;
+            transition: 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+        .cz-toggle input:checked + .cz-slider { background: linear-gradient(135deg, #0c4a6e, #0ea5e9); }
+        .cz-toggle input:checked + .cz-slider::before { transform: translateX(20px); }
+        .cz-hint { text-align: center; color: var(--muted); font-size: 0.78em; margin: 20px 0 40px; }
+        .cz-handle { cursor: grab; font-size: 1.2em; color: var(--muted); padding-right: 4px; user-select: none; }
+        .cz-dragging { opacity: 0.4; }
+        .cz-drag-over { border-color: #0ea5e9; box-shadow: 0 0 0 2px rgba(14,165,233,0.3); }

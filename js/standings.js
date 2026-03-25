@@ -104,9 +104,190 @@ function attachTeamStatsHandlers(el, league) {
     });
 }
 
+async function loadNHLStandings() {
+    const el = document.getElementById('standings-body');
+    try {
+        const res = await fetch(`${NHL_PROXY}standings/now`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        // Group by conference → division
+        const confMap = new Map();
+        for (const t of (data.standings || [])) {
+            const conf = t.conferenceName || 'Other';
+            const div  = t.divisionName   || 'Other';
+            if (!confMap.has(conf)) confMap.set(conf, new Map());
+            const divMap = confMap.get(conf);
+            if (!divMap.has(div)) divMap.set(div, []);
+            divMap.get(div).push(t);
+        }
+        for (const [, divMap] of confMap)
+            for (const [, teams] of divMap)
+                teams.sort((a, b) => (a.divisionSequence ?? 99) - (b.divisionSequence ?? 99));
+
+        const cols = [
+            { k:'gamesPlayed',  l:'P'   },
+            { k:'wins',         l:'V'   },
+            { k:'losses',       l:'H'   },
+            { k:'otLosses',     l:'OT'  },
+            { k:'points',       l:'Pts', pts:true },
+            { k:'goalsFor',     l:'TM'  },
+            { k:'goalsAgainst', l:'PM'  },
+        ];
+        const thCells = cols.map(c => `<th${c.pts?' class="st-pts"':''}>${c.l}</th>`).join('');
+
+        const CONF_ORDER = ['Eastern', 'Western'];
+        const CONF_FI = { Eastern:'Itäinen konferenssi', Western:'Läntinen konferenssi' };
+        const DIV_FI  = { Atlantic:'Atlantti-divisioona', Metropolitan:'Metropolitan-divisioona',
+                          Central:'Keski-divisioona',     Pacific:'Tyynimeri-divisioona' };
+
+        const sortedConfs = [...confMap.keys()].sort((a, b) =>
+            (CONF_ORDER.indexOf(a) + 1 || 99) - (CONF_ORDER.indexOf(b) + 1 || 99));
+
+        let html = '<p class="section-info">Kausi 2025–26</p>';
+
+        for (const conf of sortedConfs) {
+            html += `<div class="matchday-header" style="margin-top:20px">${CONF_FI[conf] || conf}</div>`;
+            for (const [div, teams] of confMap.get(conf)) {
+                html += `<div style="font-size:0.72em;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:14px 0 6px;padding-left:4px">${DIV_FI[div] || div}</div>`;
+                let rows = '';
+                for (const t of teams) {
+                    const logo = t.teamLogo || '';
+                    const name = t.teamName?.default || t.teamAbbrev?.default || '?';
+                    const tdCells = cols.map(c =>
+                        `<td${c.pts?' class="st-pts"':''}>${t[c.k] ?? '–'}</td>`).join('');
+                    rows += `<tr class="st-row" data-team-id="${t.teamId}" data-team-name="${name}" data-team-logo="${logo}">
+                        <td class="st-rank">${t.divisionSequence ?? ''}</td>
+                        <td><div class="st-team">
+                            <img src="${logo}" alt="${name}" onerror="this.style.visibility='hidden'">
+                            <span>${name}</span>
+                        </div></td>
+                        ${tdCells}
+                    </tr>`;
+                }
+                html += `<div class="match-card" style="padding:0;overflow:hidden;margin-bottom:12px">
+                    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+                        <table class="standings-table">
+                            <thead><tr><th>#</th><th style="text-align:left">Joukkue</th>${thCells}</tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>`;
+            }
+        }
+        el.innerHTML = html;
+    } catch (err) {
+        el.innerHTML = `<div class="error-msg">Virhe sarjataulukon lataamisessa: ${err.message}</div>`;
+    }
+}
+
+async function loadSHLStandings() {
+    const el = document.getElementById('standings-body');
+    try {
+        const res = await fetch('/shl-api/statistics-v2/league-standings?ssgtUuid=iuzqg7dqk9');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const rows = data.leagueStandings || [];
+
+        const cols = [
+            { k:'GP',     l:'P'   },
+            { k:'W',      l:'V',  fn: r => r.W - r.OTW },
+            { k:'OTW',    l:'JV'  },
+            { k:'OTL',    l:'JH'  },
+            { k:'L',      l:'H'   },
+            { k:'G',      l:'TM'  },
+            { k:'GA',     l:'PM'  },
+            { k:'Points', l:'Pts', pts: true },
+        ];
+        const thCells = cols.map(c => `<th${c.pts?' class="st-pts"':''}>${c.l}</th>`).join('');
+
+        let tableRows = '';
+        for (const r of rows) {
+            const ti = r.info?.teamInfo;
+            const logo = ti?.teamMedia || '';
+            const name = ti?.teamNames?.long || ti?.teamNames?.short || r.info?.code || '?';
+            const tdCells = cols.map(c => {
+                const val = c.fn ? c.fn(r) : (r[c.k] ?? '–');
+                return `<td${c.pts?' class="st-pts"':''}>${val}</td>`;
+            }).join('');
+            tableRows += `<tr class="st-row" data-team-id="${ti?.teamId||''}" data-team-name="${name}" data-team-logo="${logo}">
+                <td class="st-rank">${r.Rank}</td>
+                <td><div class="st-team">
+                    <img src="${logo}" alt="${name}" onerror="this.style.visibility='hidden'">
+                    <span>${name}</span>
+                </div></td>
+                ${tdCells}
+            </tr>`;
+        }
+
+        el.innerHTML = `<p class="section-info">Runkosarja 2025–26</p>
+            <div class="match-card" style="padding:0;overflow:hidden;border-radius:16px">
+                <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+                    <table class="standings-table">
+                        <thead><tr><th>#</th><th style="text-align:left">Joukkue</th>${thCells}</tr></thead>
+                        <tbody>${tableRows}</tbody>
+                    </table>
+                </div>
+            </div>`;
+    } catch (err) {
+        el.innerHTML = `<div class="error-msg">Virhe sarjataulukon lataamisessa: ${err.message}</div>`;
+    }
+}
+
+async function loadNLAStandings() {
+    const el = document.getElementById('standings-body');
+    try {
+        const res = await fetch('/nla-api/teams');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const teams = (await res.json()).sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99));
+
+        const cols = [
+            { k:'gp',   l:'P'   },
+            { k:'_regw',l:'V',   fn: t => t.gw - (t.gwot||0) - (t.gwpe||0) },
+            { k:'_otw', l:'JV',  fn: t => (t.gwot||0) + (t.gwpe||0) },
+            { k:'_oth', l:'JH',  fn: t => (t.glot||0) + (t.glpe||0) },
+            { k:'_regl',l:'H',   fn: t => t.gl - (t.glot||0) - (t.glpe||0) },
+            { k:'g',    l:'TM'  },
+            { k:'ga',   l:'PM'  },
+            { k:'po',   l:'Pts', pts: true },
+        ];
+        const thCells = cols.map(c => `<th${c.pts?' class="st-pts"':''}>${c.l}</th>`).join('');
+
+        let tableRows = '';
+        for (const t of teams) {
+            const tdCells = cols.map(c => {
+                const val = c.fn ? c.fn(t) : (t[c.k] ?? '–');
+                return `<td${c.pts?' class="st-pts"':''}>${val}</td>`;
+            }).join('');
+            tableRows += `<tr class="st-row" data-team-id="${t.teamId}" data-team-name="${t.name}" data-team-logo="">
+                <td class="st-rank">${t.rank}</td>
+                <td><div class="st-team">
+                    <span>${t.name}</span>
+                </div></td>
+                ${tdCells}
+            </tr>`;
+        }
+
+        el.innerHTML = `<p class="section-info">Kausi 2025–26</p>
+            <div class="match-card" style="padding:0;overflow:hidden;border-radius:16px">
+                <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+                    <table class="standings-table">
+                        <thead><tr><th>#</th><th style="text-align:left">Joukkue</th>${thCells}</tr></thead>
+                        <tbody>${tableRows}</tbody>
+                    </table>
+                </div>
+            </div>`;
+    } catch (err) {
+        el.innerHTML = `<div class="error-msg">Virhe sarjataulukon lataamisessa: ${err.message}</div>`;
+    }
+}
+
 async function loadStandings(league) {
     const el = document.getElementById('standings-body');
     if (league.isLiiga) { return loadLiigaStandings(league); }
+    if (league.isNHL)   { return loadNHLStandings(); }
+    if (league.isSHL)   { return loadSHLStandings(); }
+    if (league.isNLA)   { return loadNLAStandings(); }
 
     try {
         const res = await fetch(standingsUrl(league));

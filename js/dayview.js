@@ -175,35 +175,24 @@ async function fetchDayEvents(league, date) {
     if (league.isLiiga) {
         const season = liigaCurrentSeason();
         const games  = await fetchLiigaGames(season);
-        const dayStr = toESPNDate(date); // yyyymmdd
+        const dayStr = toESPNDate(date);
         const dayMatches = games.filter(g => {
             if (!g.homeTeam.teamName) return false;
-            const gDate = new Date(g.start);
-            return toESPNDate(gDate) === dayStr;
+            return toESPNDate(new Date(g.start)) === dayStr;
         });
         return dayMatches.map(liigaToESPN).filter(Boolean);
     }
-    // NHL:ssä (ja muissa Pohjois-Amerikan sarjoissa) ESPN tallentaa pelit
-    // US-aikavyöhykkeen mukaan. Suomen ajassa yöllä pelatut ottelut
-    // (esim. klo 02:00 Suomea = klo 19:00 ET edellisenä päivänä) löytyvät
-    // ESPN:stä edellisen päivän hakutuloksista. Haetaan siksi molemmat
-    // päivät ja filtteröidään Suomen paikallisen ajan mukaan.
-    // Eurooppalaisille sarjoille tätä ei tarvita, koska pelit pelataan päivällä.
-    if (league.northAmerica) {
-        const prevDate = new Date(date);
-        prevDate.setDate(prevDate.getDate() - 1);
-        const [prevEvents, todayEvents] = await Promise.all([
-            fetchMatches(league, prevDate, prevDate),
-            fetchMatches(league, date, date)
-        ]);
-        const allEvents = [...prevEvents, ...todayEvents];
-        const dayStr = toESPNDate(date);
-        const seen = new Set();
-        return allEvents.filter(ev => {
-            if (seen.has(ev.id)) return false;
-            seen.add(ev.id);
-            return toESPNDate(new Date(ev.date)) === dayStr;
-        });
+    if (league.isNHL) {
+        const games = await fetchNHLGames(date);
+        return games.map(nhlGameToESPN);
+    }
+    if (league.isSHL) {
+        const games = await fetchSHLGames(date);
+        return games.map(shlGameToESPN);
+    }
+    if (league.isNLA) {
+        const games = await fetchNLAGames(date);
+        return games.map(nlaGameToESPN);
     }
     return fetchMatches(league, date, date);
 }
@@ -214,7 +203,7 @@ async function loadDayView(date) {
     const el = document.getElementById('day-content');
     el.innerHTML = '<div class="loading"><div class="spinner"></div>Ladataan...</div>';
 
-    const leagueOrder = Object.values(LEAGUES);
+    const leagueOrder = getOrderedEnabledLeagues();
     const results = await Promise.allSettled(
         leagueOrder.map(lg => fetchDayEvents(lg, date))
     );

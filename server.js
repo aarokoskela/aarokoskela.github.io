@@ -17,8 +17,10 @@ const LEAGUES = {
     seriea: { key:'seriea', sport:'soccer', id:'ita.1',          northAmerica:false, isLiiga:false },
     ligue1: { key:'ligue1', sport:'soccer', id:'fra.1',          northAmerica:false, isLiiga:false },
     ucl:    { key:'ucl',    sport:'soccer', id:'uefa.champions',  northAmerica:false, isLiiga:false },
-    nhl:    { key:'nhl',    sport:'hockey', id:'nhl',             northAmerica:true,  isLiiga:false },
+    nhl:    { key:'nhl',    sport:'hockey', id:'nhl',             northAmerica:true,  isLiiga:false, isNHL:true },
     liiga:  { key:'liiga',  sport:'hockey', id:'liiga',           northAmerica:false, isLiiga:true  },
+    shl:    { key:'shl',    sport:'hockey', id:'shl',             northAmerica:false, isLiiga:false, isSHL:true },
+    nla:    { key:'nla',    sport:'hockey', id:'nla',             northAmerica:false, isLiiga:false, isNLA:true },
 };
 
 // ── Apufunktiot ─────────────────────────────────────────────────────────────
@@ -26,8 +28,12 @@ function toDateStr(d) {
     return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
 }
 
-async function apiFetch(url) {
-    const res = await fetch(url);
+function toNHLDateStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+async function apiFetch(url, headers) {
+    const res = await fetch(url, headers ? { headers } : undefined);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }
@@ -60,6 +66,122 @@ async function fetchTodayESPN(league, date) {
 
     const data = await apiFetch(`${base}?dates=${toDateStr(date)}-${toDateStr(date)}&limit=100`);
     return data.events || [];
+}
+
+async function fetchTodayNHL(date) {
+    const prev = new Date(date);
+    prev.setDate(prev.getDate() - 1);
+    const safe = url => apiFetch(url).catch(() => ({ games: [] }));
+    const [a, b] = await Promise.all([
+        safe(`https://api-web.nhle.com/v1/score/${toNHLDateStr(prev)}`),
+        safe(`https://api-web.nhle.com/v1/score/${toNHLDateStr(date)}`),
+    ]);
+    const dayStr = toDateStr(date);
+    const seen = new Set();
+    return [...(a.games || []), ...(b.games || [])].filter(g => {
+        if (seen.has(g.id)) return false;
+        seen.add(g.id);
+        return toDateStr(new Date(g.startTimeUTC)) === dayStr;
+    });
+}
+
+function nhlApiSnapshot(game) {
+    const state = game.gameState;
+    const period = game.period || 0;
+    const pt = game.periodDescriptor?.periodType;
+    let snapState, statusText, displayClock;
+    if (state === 'FUT' || state === 'PRE') {
+        snapState = 'pre'; statusText = ''; displayClock = '';
+    } else if (state === 'FINAL' || state === 'OFF') {
+        snapState = 'post';
+        statusText = pt === 'OT' ? 'JA' : pt === 'SO' ? 'VL' : 'Lopputulos';
+        displayClock = '';
+    } else {
+        snapState = 'in';
+        statusText = pt === 'OT' ? 'Jatkoaika' : pt === 'SO' ? 'Voittolaukaukset' : `${period}. erä`;
+        displayClock = game.clock?.timeRemaining || '';
+    }
+    return {
+        id:           String(game.id),
+        homeScore:    String(game.homeTeam?.score ?? 0),
+        awayScore:    String(game.awayTeam?.score ?? 0),
+        state:        snapState,
+        statusText,
+        displayClock,
+    };
+}
+
+// SHL: haetaan sekä runkosarja että playoffs
+const SHL_SEASON = 'xs4m9qupsi';
+const SHL_SERIES = 'qQ9-bb0bzEWUk';
+const SHL_HEADERS = { 'x-s8y-instance-id': 'shl1_shl' };
+const SHL_GAME_TYPES = ['qQ9-af37Ti40B', 'qQ9-7debq38kX']; // runkosarja + playoffs
+
+async function fetchTodaySHL(date) {
+    const dateStr = toNHLDateStr(date); // YYYY-MM-DD, käytetään Finnish local date
+    const results = await Promise.all(SHL_GAME_TYPES.map(gt =>
+        apiFetch(`https://www.shl.se/api/sports-v2/game-schedule?seasonUuid=${SHL_SEASON}&seriesUuid=${SHL_SERIES}&gameTypeUuid=${gt}`,
+            SHL_HEADERS).catch(() => ({ gameInfo: [] }))
+    ));
+    const allGames = results.flatMap(r => r.gameInfo || []);
+    return allGames.filter(g => {
+        if (!g.rawStartDateTime) return false;
+        const d = new Date(g.rawStartDateTime);
+        return toNHLDateStr(d) === dateStr;
+    });
+}
+
+function shlApiSnapshot(game) {
+    const state = game.state;
+    let snapState, statusText, displayClock;
+    if (state === 'pre-game') {
+        snapState = 'pre'; statusText = ''; displayClock = '';
+    } else if (state === 'post-game') {
+        snapState = 'post';
+        statusText = game.overtime ? 'JA' : game.shootout ? 'VL' : 'Lopputulos';
+        displayClock = '';
+    } else {
+        snapState = 'in'; statusText = 'Live'; displayClock = '';
+    }
+    return {
+        id:           game.uuid,
+        homeScore:    String(game.homeTeamInfo?.score ?? 0),
+        awayScore:    String(game.awayTeamInfo?.score ?? 0),
+        state:        snapState,
+        statusText,
+        displayClock,
+    };
+}
+
+async function fetchTodayNLA(date) {
+    const dateStr = toNHLDateStr(date);
+    const data = await apiFetch('https://www.nationalleague.ch/api/games?season=' + (date.getMonth() >= 7 ? date.getFullYear() + 1 : date.getFullYear()));
+    return (data || []).filter(g => {
+        if (g.status === 'canceled') return false;
+        const d = new Date(g.date);
+        return toNHLDateStr(d) === dateStr;
+    });
+}
+
+function nlaApiSnapshot(game) {
+    const s = game.status;
+    let snapState, statusText;
+    if (s === 'finished') {
+        snapState = 'post';
+        statusText = game.isOvertime ? 'JA' : game.isShootout ? 'VL' : 'Lopputulos';
+    } else if (s === 'live' || s === 'inProgress') {
+        snapState = 'in'; statusText = 'Live';
+    } else {
+        snapState = 'pre'; statusText = '';
+    }
+    return {
+        id:           String(game.gameId),
+        homeScore:    String(game.homeTeamResult ?? 0),
+        awayScore:    String(game.awayTeamResult ?? 0),
+        state:        snapState,
+        statusText,
+        displayClock: '',
+    };
 }
 
 async function fetchTodayLiiga(date) {
@@ -127,6 +249,15 @@ async function pollAll() {
             if (league.isLiiga) {
                 const games = await fetchTodayLiiga(today);
                 snapshots   = games.map(liigaSnapshot);
+            } else if (league.isNHL) {
+                const games = await fetchTodayNHL(today);
+                snapshots   = games.map(nhlApiSnapshot);
+            } else if (league.isSHL) {
+                const games = await fetchTodaySHL(today);
+                snapshots   = games.map(shlApiSnapshot);
+            } else if (league.isNLA) {
+                const games = await fetchTodayNLA(today);
+                snapshots   = games.map(nlaApiSnapshot);
             } else {
                 const events = await fetchTodayESPN(league, today);
                 snapshots    = events.map(espnSnapshot);
@@ -208,11 +339,44 @@ const MIME_TYPES = {
     '.svg':  'image/svg+xml',
 };
 
+async function proxyJSON(res, url, headers) {
+    try {
+        const data = await apiFetch(url, headers);
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8',
+                             'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify(data));
+    } catch (err) {
+        res.writeHead(502, { 'Content-Type': 'text/plain' });
+        res.end(`Proxy error: ${err.message}`);
+    }
+}
+
+async function proxyNHL(req, res, nhlPath) {
+    await proxyJSON(res, `https://api-web.nhle.com/v1/${nhlPath}`);
+}
+
 function serveStatic(req, res) {
-    // Salli CORS (FPL-proxy ei enää tarvita tätä, mutta hyvä käytäntö)
     res.setHeader('Access-Control-Allow-Origin', '*');
 
     let urlPath = req.url.split('?')[0]; // poista query-parametrit
+
+    // ── API proxyt ─────────────────────────────────────────────────────────
+    if (urlPath.startsWith('/nhl-api/')) {
+        const p = urlPath.slice('/nhl-api/'.length) + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
+        proxyJSON(res, `https://api-web.nhle.com/v1/${p}`);
+        return;
+    }
+    if (urlPath.startsWith('/shl-api/')) {
+        const p = urlPath.slice('/shl-api/'.length) + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
+        proxyJSON(res, `https://www.shl.se/api/${p}`, SHL_HEADERS);
+        return;
+    }
+    if (urlPath.startsWith('/nla-api/')) {
+        const p = urlPath.slice('/nla-api/'.length) + (req.url.includes('?') ? '?' + req.url.split('?')[1] : '');
+        proxyJSON(res, `https://www.nationalleague.ch/api/${p}`);
+        return;
+    }
+
     if (urlPath === '/') urlPath = '/index.html';
 
     const filePath = path.join(__dirname, urlPath);

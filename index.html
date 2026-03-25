@@ -30,6 +30,7 @@
         <button class="tab-btn"        data-tab="standings"   onclick="showTab('standings',   this)">Sarjataulukko</button>
         <button class="tab-btn"        data-tab="playerstats" onclick="showTab('playerstats', this)">Pelaajatilastot</button>
         <button class="tab-btn"        data-tab="ipa-manu"    onclick="showTab('ipa-manu',    this)">Ipan ja ManU:n pelit</button>
+        <button class="tab-btn"        data-tab="customize"   onclick="showTab('customize',   this)">Muokkaa</button>
     </div>
 
     <!-- Tab content -->
@@ -75,6 +76,10 @@
                         <img src="https://a.espncdn.com/i/leaguelogos/hockey/500/1.png" class="lc-logo" alt="">NHL</button>
                     <button class="league-btn" data-league="liiga" onclick="switchLeague('liiga')">
                         <span style="font-size:1.1em;line-height:1">🏒</span>Liiga</button>
+                    <button class="league-btn" data-league="shl" onclick="switchLeague('shl')">
+                        <img src="https://sportality.cdn.s8y.se/series-logos/qQ9-bb0bzEWUk.svg" class="lc-logo" alt="">SHL</button>
+                    <button class="league-btn" data-league="nla" onclick="switchLeague('nla')">
+                        <span style="font-size:1.1em;line-height:1">🏒</span>NLA</button>
                 </div>
             </div>
             <div id="standings-body">
@@ -103,11 +108,18 @@
                         <img src="https://a.espncdn.com/i/leaguelogos/hockey/500/1.png" class="lc-logo" alt="">NHL</button>
                     <button class="league-btn" data-league="liiga" onclick="switchLeague('liiga')">
                         <span style="font-size:1.1em;line-height:1">🏒</span>Liiga</button>
+                    <button class="league-btn" data-league="shl" onclick="switchLeague('shl')">
+                        <img src="https://sportality.cdn.s8y.se/series-logos/qQ9-bb0bzEWUk.svg" class="lc-logo" alt="">SHL</button>
+                    <button class="league-btn" data-league="nla" onclick="switchLeague('nla')">
+                        <span style="font-size:1.1em;line-height:1">🏒</span>NLA</button>
                 </div>
             </div>
             <div id="playerstats-body">
                 <div class="loading"><div class="spinner"></div>Ladataan...</div>
             </div>
+        </div>
+        <div id="customize" class="tab-content">
+            <div id="customize-body"></div>
         </div>
         <div id="ipa-manu" class="tab-content">
             <div class="view-toggle">
@@ -138,6 +150,7 @@
 <script src="js/standings.js"></script>
 <script src="js/dayview.js"></script>
 <script src="js/playerstats.js"></script>
+<script src="js/customize.js"></script>
 <script src="js/ipamanu.js"></script>
 <script src="js/init.js"></script>
 <script src="js/ws-client.js"></script>

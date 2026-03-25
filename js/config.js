@@ -35,12 +35,22 @@ const LEAGUES = {
     nhl: {
         key:'nhl', sport:'hockey', id:'nhl',
         name:'NHL', subtitle:'National Hockey League \u2014 Ottelutulokset & ohjelma',
-        logo:'https://a.espncdn.com/i/leaguelogos/hockey/500/1.png', northAmerica: true
+        logo:'https://a.espncdn.com/i/leaguelogos/hockey/500/1.png', northAmerica: true, isNHL: true
     },
     liiga: {
         key:'liiga', sport:'hockey', id:'liiga',
         name:'Liiga', subtitle:'Suomen SM-Liiga \u2014 Ottelutulokset & ohjelma',
         logo:'', isLiiga: true
+    },
+    shl: {
+        key:'shl', sport:'hockey', id:'shl',
+        name:'SHL', subtitle:'Ruotsin jääkiekkoliiga \u2014 Ottelutulokset & ohjelma',
+        logo:'https://sportality.cdn.s8y.se/series-logos/qQ9-bb0bzEWUk.svg', isSHL: true
+    },
+    nla: {
+        key:'nla', sport:'hockey', id:'nla',
+        name:'NLA', subtitle:'Sveitsin jääkiekkoliiga \u2014 Ottelutulokset & ohjelma',
+        logo:'', isNLA: true
     },
 };
 

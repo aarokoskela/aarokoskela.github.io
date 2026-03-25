@@ -66,55 +66,27 @@ function buildPlayerTable(leaders, mainStat, mainLabel, limit = 10, gpLabel = 'P
     </div>`;
 }
 
-// ── NHL player stats (core ESPN API with parallel athlete/team resolution) ──
+// ── NHL player stats (NHL official API) ────────────────────────────────────
 async function loadNHLPlayerStats(el) {
-    const season  = liigaCurrentSeason();
-    const base    = `https://sports.core.api.espn.com/v2/sports/hockey/leagues/nhl`;
-    const fetchJ  = url => fetch(url).then(r => r.ok ? r.json() : null).catch(() => null);
-    const refId   = ref => ref?.match(/\/(\d+)(?:\?|$)/)?.[1];
+    const season = liigaCurrentSeason();
+    const res = await fetch(`${NHL_PROXY}skater-stats-leaders/current?categories=points,goals,assists&limit=20`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
 
-    const leadersRes = await fetch(`${base}/seasons/${season}/types/2/leaders`);
-    if (!leadersRes.ok) throw new Error(`HTTP ${leadersRes.status}`);
-    const leaderData = await leadersRes.json();
-    const cats = leaderData.categories || [];
+    const toLeader = p => {
+        const fn = typeof p.firstName === 'string' ? p.firstName : (p.firstName?.default || '');
+        const ln = typeof p.lastName  === 'string' ? p.lastName  : (p.lastName?.default  || '');
+        return {
+            athlete: { displayName: `${fn} ${ln}`.trim() },
+            team:    { displayName: p.teamName?.default || p.teamAbbrev || '' },
+            gp:      p.gamesPlayed ?? '–',
+            val:     p.value ?? 0,
+        };
+    };
 
-    const findCat = name => cats.find(c => c.name === name);
-    const goalsCat   = findCat('goals');
-    const assistsCat = findCat('assists');
-    const pointsCat  = findCat('points');
-
-    // Collect unique athlete and team refs
-    const athleteMap = new Map(); // id → ref url
-    const teamMap    = new Map();
-    for (const cat of [goalsCat, assistsCat, pointsCat]) {
-        for (const l of (cat?.leaders || [])) {
-            const aId = refId(l.athlete?.$ref);
-            const tId = refId(l.team?.$ref);
-            if (aId && !athleteMap.has(aId)) athleteMap.set(aId, l.athlete.$ref);
-            if (tId && !teamMap.has(tId))    teamMap.set(tId, l.team.$ref);
-        }
-    }
-
-    // Resolve athletes and teams in parallel
-    const [athleteResults, teamResults] = await Promise.all([
-        Promise.all([...athleteMap.values()].map(fetchJ)),
-        Promise.all([...teamMap.values()].map(fetchJ)),
-    ]);
-
-    const athletes = {}, teams = {};
-    for (const a of athleteResults) if (a?.id) athletes[String(a.id)] = a.displayName || a.fullName || '?';
-    for (const t of teamResults)    if (t?.id) teams[String(t.id)]    = t.shortDisplayName || t.displayName || '';
-
-    const toLeader = l => ({
-        athlete: { displayName: athletes[refId(l.athlete?.$ref)] || '?', id: refId(l.athlete?.$ref) },
-        team:    { displayName: teams[refId(l.team?.$ref)] || '' },
-        gp:      '–',
-        val:     Math.round(l.value ?? 0),
-    });
-
-    const points  = (pointsCat?.leaders  || []).map(toLeader);
-    const goals   = (goalsCat?.leaders   || []).map(toLeader);
-    const assists = (assistsCat?.leaders || []).map(toLeader);
+    const points  = (data.points  || []).map(toLeader);
+    const goals   = (data.goals   || []).map(toLeader);
+    const assists = (data.assists || []).map(toLeader);
 
     el.innerHTML = `
         <p class="section-info">Kauden parhaat pelaajat ${season - 1}–${String(season).slice(2)}</p>
