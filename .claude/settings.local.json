@@ -17,7 +17,8 @@
       "Bash(node -e \"\n// Kokeillaan tunnettuja hockey-APIja\nconst urls = [\n    'https://api.shl.se/seasons/2024/games',\n    'https://openapi.shl.se/seasons',\n    'https://www.sihf.ch/de/game-center/api',\n    'https://api.national-league.ch/api/results',\n    'https://nla.sportsnet.ch/api/games',\n];\nPromise.all\\(urls.map\\(url =>\n    fetch\\(url, {headers:{'User-Agent':'Mozilla/5.0','Accept':'application/json'}}\\)\n        .then\\(r => url + ': ' + r.status\\)\n        .catch\\(e => url + ': ' + e.message\\)\n\\)\\).then\\(r => r.forEach\\(x=>console.log\\(x\\)\\)\\);\n\" 2>&1)",
       "Bash(node -e \"\n// SHL: kokeillaan live-score / tilasto-palveluja\nconst urls = [\n    'https://www.shl.se/api/statistics/seasons/2024/games',\n    'https://www.shl.se/statistik/matcher',\n];\n// Kokeillaan myös swiss NL\nconst nlUrls = [\n    'https://www.national-league.ch/de/spielplan',\n    'https://www.national-league.ch/api/v1/games',\n];\nfor\\(const url of [...urls,...nlUrls]\\) {\n    fetch\\(url, {headers:{'User-Agent':'Mozilla/5.0','Accept':'application/json, text/html'}}\\)\n        .then\\(r => console.log\\(url,':',r.status, r.headers.get\\('content-type'\\)?.slice\\(0,30\\)\\)\\)\n        .catch\\(e => console.log\\(url,':', e.message\\)\\);\n}\n\" 2>&1)",
       "Bash(node -e \":*)",
-      "Bash(node -e \"const d=JSON.parse\\(require\\(''''fs''''\\).readFileSync\\(''''/dev/stdin'''',''''utf8''''\\)\\); console.log\\(JSON.stringify\\(d\\)\\);\")"
+      "Bash(node -e \"const d=JSON.parse\\(require\\(''''fs''''\\).readFileSync\\(''''/dev/stdin'''',''''utf8''''\\)\\); console.log\\(JSON.stringify\\(d\\)\\);\")",
+      "Bash(node:*)"
     ]
   }
 }

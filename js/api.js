@@ -21,16 +21,16 @@ function teamUrl(league, teamId) {
 const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 
 function nhlApiUrl(path) {
-    if (IS_LOCAL) return `/nhl-api/${path}`;
-    return `https://corsproxy.io/?url=${encodeURIComponent('https://api-web.nhle.com/v1/' + path)}`;
+    // api-web.nhle.com ei tue CORS:ia → vain localhostilla (palvelimen proxy)
+    return IS_LOCAL ? `/nhl-api/${path}` : null;
 }
 function shlApiUrl(path) {
-    if (IS_LOCAL) return `/shl-api/${path}`;
-    return `https://corsproxy.io/?url=${encodeURIComponent('https://www.shl.se/api/' + path)}`;
+    // shl.se sallii CORS:in vain omille domeineille → vain localhostilla
+    return IS_LOCAL ? `/shl-api/${path}` : null;
 }
 function nlaApiUrl(path) {
-    if (IS_LOCAL) return `/nla-api/${path}`;
-    return `https://corsproxy.io/?url=${encodeURIComponent('https://www.nationalleague.ch/api/' + path)}`;
+    // nationalleague.ch tukee CORS: * → suora haku toimii kaikista selaimista
+    return IS_LOCAL ? `/nla-api/${path}` : `https://www.nationalleague.ch/api/${path}`;
 }
 
 // ── NHL Official API ──────────────────────────────────────────────────────
@@ -42,11 +42,11 @@ function toNHLDateStr(d) {
 async function fetchNHLGames(date) {
     const prev = new Date(date);
     prev.setDate(prev.getDate() - 1);
+    const prevUrl = nhlApiUrl(`score/${toNHLDateStr(prev)}`);
+    const todayUrl = nhlApiUrl(`score/${toNHLDateStr(date)}`);
+    if (!prevUrl) return []; // ei backendiä → GitHub Pages käyttää ESPN:ää (dayview.js)
     const safe = url => fetch(url, { cache: 'no-store' }).then(r => r.ok ? r.json() : { games: [] }).catch(() => ({ games: [] }));
-    const [a, b] = await Promise.all([
-        safe(nhlApiUrl(`score/${toNHLDateStr(prev)}`)),
-        safe(nhlApiUrl(`score/${toNHLDateStr(date)}`)),
-    ]);
+    const [a, b] = await Promise.all([safe(prevUrl), safe(todayUrl)]);
     const dayStr = toESPNDate(date);
     const seen = new Set();
     return [...(a.games || []), ...(b.games || [])].filter(g => {
@@ -102,6 +102,8 @@ const SHL_TYPES    = ['qQ9-af37Ti40B', 'qQ9-7debq38kX']; // runkosarja + playoff
 const shlGamesCache = {}; // gameTypeUuid → { data, ts }
 
 async function fetchAllSHLGames() {
+    const url = shlApiUrl(`sports-v2/game-schedule?seasonUuid=${SHL_SEASON}&seriesUuid=${SHL_SERIES}&gameTypeUuid=${SHL_TYPES[0]}`);
+    if (!url) return []; // ei backendiä → SHL ei toimi GitHub Pagesissa
     const now = Date.now();
     const results = await Promise.all(SHL_TYPES.map(async gt => {
         const cached = shlGamesCache[gt];

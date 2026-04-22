@@ -285,8 +285,8 @@ async function loadNLAStandings() {
 async function loadStandings(league) {
     const el = document.getElementById('standings-body');
     if (league.isLiiga) { return loadLiigaStandings(league); }
-    if (league.isNHL)   { return loadNHLStandings(); }
-    if (league.isSHL)   { return loadSHLStandings(); }
+    if (league.isNHL && IS_LOCAL) { return loadNHLStandings(); }
+    if (league.isSHL && IS_LOCAL) { return loadSHLStandings(); }
     if (league.isNLA)   { return loadNLAStandings(); }
 
     try {

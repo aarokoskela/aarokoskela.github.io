@@ -183,6 +183,22 @@ async function fetchDayEvents(league, date) {
         return dayMatches.map(liigaToESPN).filter(Boolean);
     }
     if (league.isNHL) {
+        if (!IS_LOCAL) {
+            // GitHub Pages: NHL Official API ei tue CORS → käytetään ESPN:ää
+            const prevDate = new Date(date);
+            prevDate.setDate(prevDate.getDate() - 1);
+            const [prev, today] = await Promise.all([
+                fetchMatches(league, prevDate, prevDate),
+                fetchMatches(league, date, date),
+            ]);
+            const dayStr = toESPNDate(date);
+            const seen = new Set();
+            return [...prev, ...today].filter(ev => {
+                if (seen.has(ev.id)) return false;
+                seen.add(ev.id);
+                return toESPNDate(new Date(ev.date)) === dayStr;
+            });
+        }
         const games = await fetchNHLGames(date);
         return games.map(nhlGameToESPN);
     }
