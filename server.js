@@ -124,19 +124,60 @@ async function fetchTodaySHL(date) {
             SHL_HEADERS).catch(() => ({ gameInfo: [] }))
     ));
     const allGames = results.flatMap(r => r.gameInfo || []);
-    return allGames.filter(g => {
+    const todayGames = allGames.filter(g => {
         if (!g.rawStartDateTime) return false;
         const d = new Date(g.rawStartDateTime);
         return toNHLDateStr(d) === dateStr;
     });
+
+    // game-schedule on staattinen aikataulu eikä päivity live-tilaan.
+    // Haetaan jokaiselle pelille erikseen live-overview oikeaa tilaa varten.
+    const overviews = await Promise.all(todayGames.map(g =>
+        apiFetch(`https://www.shl.se/api/gameday/game-overview/${g.uuid}`, SHL_HEADERS)
+            .catch(() => null)
+    ));
+    return todayGames.map((g, i) => ({ ...g, _overview: overviews[i] }));
 }
 
 function shlApiSnapshot(game) {
-    const state = game.state;
+    const ov = game._overview;
     let snapState, statusText, displayClock;
-    if (state === 'pre-game') {
+
+    if (ov && ov.state) {
+        // Live-overview saatavilla: käytetään sen tilaa ja tulosta
+        const ovState = ov.state; // "Ongoing", "GameEnded", "PeriodBreak", "Overtime", "Shootout"
+        if (ovState === 'GameEnded') {
+            snapState = 'post';
+            statusText = ovState === 'Overtime' ? 'JA' : ovState === 'Shootout' ? 'VL' : 'Lopputulos';
+            // shootout/overtime tarkistus: haetaan schedule-datasta
+            statusText = game.overtime ? 'JA' : game.shootout ? 'VL' : 'Lopputulos';
+            displayClock = '';
+        } else if (ovState === 'Ongoing' || ovState === 'PeriodBreak' || ovState === 'Overtime' || ovState === 'Shootout') {
+            snapState = 'in';
+            const period = ov.time?.period || 0;
+            if (ovState === 'Overtime')      statusText = 'Jatkoaika';
+            else if (ovState === 'Shootout') statusText = 'Voittolaukaukset';
+            else if (ovState === 'PeriodBreak') statusText = `${period}. erätauko`;
+            else                             statusText = `${period}. erä`;
+            displayClock = ov.time?.periodTime || '';
+        } else {
+            snapState = 'pre'; statusText = ''; displayClock = '';
+        }
+        return {
+            id:           game.uuid,
+            homeScore:    String(ov.homeGoals ?? 0),
+            awayScore:    String(ov.awayGoals ?? 0),
+            state:        snapState,
+            statusText,
+            displayClock,
+        };
+    }
+
+    // Fallback: käytetään schedule-dataa (ei live-tilaa)
+    const state = game.state;
+    if (state === 'pre-game' || state === 'pre_game') {
         snapState = 'pre'; statusText = ''; displayClock = '';
-    } else if (state === 'post-game') {
+    } else if (state === 'post-game' || state === 'post_game') {
         snapState = 'post';
         statusText = game.overtime ? 'JA' : game.shootout ? 'VL' : 'Lopputulos';
         displayClock = '';

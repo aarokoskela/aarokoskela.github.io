@@ -107,7 +107,7 @@ function attachTeamStatsHandlers(el, league) {
 async function loadNHLStandings() {
     const el = document.getElementById('standings-body');
     try {
-        const res = await fetch(`${NHL_PROXY}standings/now`);
+        const res = await fetch(nhlApiUrl('standings/now'));
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
@@ -184,7 +184,7 @@ async function loadNHLStandings() {
 async function loadSHLStandings() {
     const el = document.getElementById('standings-body');
     try {
-        const res = await fetch('/shl-api/statistics-v2/league-standings?ssgtUuid=iuzqg7dqk9');
+        const res = await fetch(shlApiUrl('statistics-v2/league-standings?ssgtUuid=iuzqg7dqk9'));
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const rows = data.leagueStandings || [];
@@ -237,7 +237,7 @@ async function loadSHLStandings() {
 async function loadNLAStandings() {
     const el = document.getElementById('standings-body');
     try {
-        const res = await fetch('/nla-api/teams');
+        const res = await fetch(nlaApiUrl('teams'));
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const teams = (await res.json()).sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99));
 

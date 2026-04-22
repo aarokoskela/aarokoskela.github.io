@@ -113,23 +113,11 @@ function renderCustomizeTab() {
     const enabled = getEnabledLeagues();
     const order   = getLeagueOrder();
 
-    const SPORT_LABEL = {
-        soccer: 'Jalkapallo',
-        hockey: 'Jääkiekko',
-    };
-    let currentSport = null;
-
     let html = '<div class="cz-list" id="cz-list">';
 
     for (const key of order) {
         const lg = LEAGUES[key];
         if (!lg) continue;
-
-        const sport = lg.sport || 'soccer';
-        if (sport !== currentSport) {
-            currentSport = sport;
-            html += `<div class="cz-group-label">${SPORT_LABEL[sport] || sport}</div>`;
-        }
 
         const on = enabled[key] !== false;
         const icon = lg.logo

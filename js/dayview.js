@@ -247,4 +247,7 @@ async function loadDayView(date) {
     if (!anyEvents) {
         el.innerHTML = '<div class="no-events">Ei otteluita valitulla päivällä.</div>';
     }
+
+    // Sovella palvelimen tuorein snapshot jos se on saapunut jo ennen renderöintiä
+    if (typeof applyLatestSnapshot === 'function') applyLatestSnapshot();
 }

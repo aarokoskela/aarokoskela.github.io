@@ -3,11 +3,19 @@
 // ── WebSocket live-päivitykset ─────────────────────────────────────────────
 // Yhdistää palvelimeen, kuuntelee muutoksia ja päivittää kortit DOM:issa
 // ilman sivun uudelleenlatausta.
+// GitHub Pagesissa ei ole backendiä → ei yritetä yhdistää.
 (function () {
+    // Altistetaan globaalisti dayview.js:n kutsuttavaksi (myös ilman yhteyttä)
+    window.applyLatestSnapshot = function () {};
+
+    // Ei WebSocket-yhteyttä GitHub Pages -ympäristössä
+    if (!IS_LOCAL) return;
+
     const WS_URL = 'ws://localhost:4000';
     let ws             = null;
     let reconnectTimer = null;
     let reconnectDelay = 2000;
+    let _lastSnapshot  = null;
 
     // ── Yhteyden hallinta ──────────────────────────────────────────────────
     function connect() {
@@ -39,7 +47,9 @@
     // ── Viestien käsittely ─────────────────────────────────────────────────
     function handleMessage(msg) {
         if (msg.type === 'snapshot') {
-            // Alkutila vastaanotettu — ei visuaalista muutosta, data on jo renderöity REST:llä
+            _lastSnapshot = msg.data;
+            // Kortit saattavat olla jo piirretty — yritetään päivittää heti
+            applyLatestSnapshot();
             return;
         }
 
@@ -110,6 +120,37 @@
             ? 'Reaaliaikainen yhteys aktiivinen'
             : 'Yhteyttä palautetaan...';
     }
+
+    // ── Snapshotin soveltaminen renderöityihin kortteihin ──────────────────
+    function applyLatestSnapshot() {
+        if (!_lastSnapshot) return;
+        let needsReload = false;
+
+        for (const snaps of Object.values(_lastSnapshot)) {
+            for (const snap of snaps) {
+                const card = document.querySelector(`[data-event-id="${snap.id}"]`);
+                if (!card) continue;
+
+                const cardState = card.classList.contains('mc-live') ? 'in'
+                                : card.classList.contains('mc-post') ? 'post' : 'pre';
+
+                if (cardState !== snap.state) {
+                    // Kortin rakenne on väärä (esim. pre→in) — tarvitaan uudelleenpiirto
+                    needsReload = true;
+                } else {
+                    updateCardScore(snap);
+                }
+            }
+        }
+
+        if (needsReload && currentTab === 'day') {
+            _lastSnapshot = null; // estetään silmukka
+            loadDayView(currentDayDate);
+        }
+    }
+
+    // Päivitetään globaali viittaus oikeaan toteutukseen
+    window.applyLatestSnapshot = applyLatestSnapshot;
 
     // Käynnistys
     connect();
