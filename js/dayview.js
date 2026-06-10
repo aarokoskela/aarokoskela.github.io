@@ -210,7 +210,19 @@ async function fetchDayEvents(league, date) {
         const games = await fetchNLAGames(date);
         return games.map(nlaGameToESPN);
     }
-    return fetchMatches(league, date, date);
+    // ESPN käyttää ET-aikaa päivien rajoina. Haetaan myös edellinen päivä
+    // ja filtteröidään Suomen paikallisajalla, jotta esim. klo 5 aamulla
+    // alkavat pelit näkyvät oikealla päivällä.
+    const prevDate = new Date(date);
+    prevDate.setDate(prevDate.getDate() - 1);
+    const dayStr = toESPNDate(date);
+    const events = await fetchMatches(league, prevDate, date);
+    const seen = new Set();
+    return events.filter(ev => {
+        if (seen.has(ev.id)) return false;
+        seen.add(ev.id);
+        return toESPNDate(new Date(ev.date)) === dayStr;
+    });
 }
 
 let dayViewLeagueFilter = null;
