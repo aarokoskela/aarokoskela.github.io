@@ -3,7 +3,7 @@
 function showTab(tab, btn) {
     // Auto-switch to PL if switching to playerstats with an unsupported league
     if (tab === 'playerstats') {
-        const supported = ['pl','laliga','bl','seriea','ligue1','ucl','nhl','liiga'];
+        const supported = ['pl','laliga','bl','seriea','ligue1','ucl','wc2026','nhl','liiga'];
         if (!supported.includes(currentLeagueKey)) {
             currentLeagueKey = 'pl';
             document.querySelectorAll('.tab-league-picker .league-btn').forEach(b => {
@@ -20,6 +20,9 @@ function showTab(tab, btn) {
 
     // Customize-välilehti renderöidään aina uudelleen
     if (tab === 'customize') { loadCustomizeTab(); return; }
+
+    // Päivänäkymä ladataan aina uudelleen (filtteri voi muuttua)
+    if (tab === 'day') { loadDayView(currentDayDate); return; }
 
     // Lazy load if still showing spinner
     const el = document.getElementById(tab);

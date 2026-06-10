@@ -213,13 +213,21 @@ async function fetchDayEvents(league, date) {
     return fetchMatches(league, date, date);
 }
 
+let dayViewLeagueFilter = null;
+
+function setDayFilter(key) {
+    dayViewLeagueFilter = key;
+}
+
 async function loadDayView(date) {
     updateDayLabel(date);
 
     const el = document.getElementById('day-content');
     el.innerHTML = '<div class="loading"><div class="spinner"></div>Ladataan...</div>';
 
-    const leagueOrder = getOrderedEnabledLeagues();
+    const leagueOrder = dayViewLeagueFilter
+        ? [LEAGUES[dayViewLeagueFilter]].filter(Boolean)
+        : getOrderedEnabledLeagues();
     const results = await Promise.allSettled(
         leagueOrder.map(lg => fetchDayEvents(lg, date))
     );
