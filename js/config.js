@@ -52,14 +52,9 @@ const LEAGUES = {
         name:'NLA', subtitle:'Sveitsin jääkiekkoliiga \u2014 Ottelutulokset & ohjelma',
         logo:'', isNLA: true
     },
-    wc2026: {
-        key:'wc2026', sport:'soccer', id:'fifa.world',
-        name:'World Cup 26', subtitle:'FIFA World Cup 2026 \u2014 Ottelutulokset & ohjelma',
-        logo:'https://a.espncdn.com/i/leaguelogos/soccer/500/4.png', hasFPL: false
-    },
 };
 
-let currentLeagueKey = 'wc2026';
+let currentLeagueKey = 'pl';
 let currentTab = 'day';
 let currentDayDate = (() => { const d = new Date(); d.setHours(0,0,0,0); return d; })();
 

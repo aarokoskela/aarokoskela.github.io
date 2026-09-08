@@ -21,7 +21,6 @@ const LEAGUES = {
     liiga:  { key:'liiga',  sport:'hockey', id:'liiga',           northAmerica:false, isLiiga:true  },
     shl:    { key:'shl',    sport:'hockey', id:'shl',             northAmerica:false, isLiiga:false, isSHL:true },
     nla:    { key:'nla',    sport:'hockey', id:'nla',             northAmerica:false, isLiiga:false, isNLA:true },
-    wc2026: { key:'wc2026', sport:'soccer', id:'fifa.world',      northAmerica:false, isLiiga:false },
 };
 
 // ── Apufunktiot ─────────────────────────────────────────────────────────────

@@ -74,7 +74,9 @@ async function fetchManUSchedule(upcoming) {
         // Scoreboard API: today → end of season, filter for Man United
         const from = new Date();
         from.setHours(0, 0, 0, 0);
-        const to = new Date(2026, 4, 31); // May 31 2026
+        // PL-kausi päättyy toukokuussa; jos ollaan elo-joulukuussa, kausi päättyy seuraavana vuonna
+        const seasonEndYear = from.getMonth() >= 6 ? from.getFullYear() + 1 : from.getFullYear();
+        const to = new Date(seasonEndYear, 4, 31);
         const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=${toESPNDate(from)}-${toESPNDate(to)}&limit=200`;
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);

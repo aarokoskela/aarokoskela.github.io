@@ -3,7 +3,7 @@
 function showTab(tab, btn) {
     // Auto-switch to PL if switching to playerstats with an unsupported league
     if (tab === 'playerstats') {
-        const supported = ['pl','laliga','bl','seriea','ligue1','ucl','wc2026','nhl','liiga'];
+        const supported = ['pl','laliga','bl','seriea','ligue1','ucl','nhl','liiga'];
         if (!supported.includes(currentLeagueKey)) {
             currentLeagueKey = 'pl';
             document.querySelectorAll('.tab-league-picker .league-btn').forEach(b => {
