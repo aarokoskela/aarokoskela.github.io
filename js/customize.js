@@ -66,41 +66,59 @@ function toggleLeagueEnabled(key) {
     if (currentTab === 'day') loadDayView(currentDayDate);
 }
 
-// ── Drag & drop -tila ──────────────────────────────────────────────────────
-let _dragKey  = null;
-let _dragOver = null;
+// ── Raahaus (pointer events – toimii sekä hiirellä että kosketuksella) ──────
+let _dragKey = null;
+let _dragEl  = null;
+let _listEl  = null;
 
-function czDragStart(e, key) {
+function czPointerDown(e, key) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    e.preventDefault();
+    const row = e.currentTarget.closest('.cz-row');
+    _listEl = document.getElementById('cz-list');
+    if (!row || !_listEl) return;
+
     _dragKey = key;
-    e.dataTransfer.effectAllowed = 'move';
-    e.currentTarget.classList.add('cz-dragging');
+    _dragEl  = row;
+    row.classList.add('cz-dragging');
+    row.style.pointerEvents = 'none';
+    document.body.style.userSelect = 'none';
+
+    document.addEventListener('pointermove', czPointerMove, { passive: false });
+    document.addEventListener('pointerup', czPointerUp);
+    document.addEventListener('pointercancel', czPointerUp);
 }
 
-function czDragEnd(e) {
-    e.currentTarget.classList.remove('cz-dragging');
-    document.querySelectorAll('.cz-row').forEach(r => r.classList.remove('cz-drag-over'));
-    _dragKey = null; _dragOver = null;
-}
-
-function czDragOver(e, key) {
+function czPointerMove(e) {
+    if (!_dragKey) return;
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    if (key === _dragOver) return;
-    _dragOver = key;
-    document.querySelectorAll('.cz-row').forEach(r => r.classList.remove('cz-drag-over'));
-    e.currentTarget.classList.add('cz-drag-over');
+
+    const target = document.elementFromPoint(e.clientX, e.clientY);
+    const row = target && target.closest ? target.closest('.cz-row') : null;
+    if (!row || row === _dragEl || !_listEl.contains(row)) return;
+
+    const rect = row.getBoundingClientRect();
+    const before = (e.clientY - rect.top) < rect.height / 2;
+    _listEl.insertBefore(_dragEl, before ? row : row.nextSibling);
 }
 
-function czDrop(e, targetKey) {
-    e.preventDefault();
-    if (!_dragKey || _dragKey === targetKey) return;
-    const order = getLeagueOrder();
-    const from  = order.indexOf(_dragKey);
-    const to    = order.indexOf(targetKey);
-    if (from < 0 || to < 0) return;
-    order.splice(from, 1);
-    order.splice(to, 0, _dragKey);
-    saveLeagueOrder(order);
+function czPointerUp() {
+    if (!_dragKey) return;
+    document.removeEventListener('pointermove', czPointerMove);
+    document.removeEventListener('pointerup', czPointerUp);
+    document.removeEventListener('pointercancel', czPointerUp);
+    document.body.style.userSelect = '';
+
+    if (_dragEl) {
+        _dragEl.classList.remove('cz-dragging');
+        _dragEl.style.pointerEvents = '';
+    }
+    if (_listEl) {
+        const order = Array.from(_listEl.querySelectorAll('.cz-row')).map(r => r.dataset.key);
+        saveLeagueOrder(order);
+    }
+
+    _dragKey = null; _dragEl = null; _listEl = null;
     renderCustomizeTab();
     if (currentTab === 'day') loadDayView(currentDayDate);
 }
@@ -124,13 +142,8 @@ function renderCustomizeTab() {
             ? `<img src="${lg.logo}" class="cz-logo" alt="" onerror="this.style.visibility='hidden'">`
             : `<span class="cz-logo-placeholder">🏒</span>`;
 
-        html += `<div class="cz-row${on ? '' : ' cz-row-off'}"
-                    draggable="true"
-                    ondragstart="czDragStart(event,'${key}')"
-                    ondragend="czDragEnd(event)"
-                    ondragover="czDragOver(event,'${key}')"
-                    ondrop="czDrop(event,'${key}')">
-            <span class="cz-handle" title="Vedä järjestääksesi">⠿</span>
+        html += `<div class="cz-row${on ? '' : ' cz-row-off'}" data-key="${key}">
+            <span class="cz-handle" title="Vedä järjestääksesi" onpointerdown="czPointerDown(event,'${key}')">⠿</span>
             ${icon}
             <span class="cz-name">${lg.name}</span>
             <label class="cz-toggle" onclick="event.stopPropagation()">
