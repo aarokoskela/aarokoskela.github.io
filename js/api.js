@@ -1,9 +1,11 @@
 'use strict';
 
 // ── API URL builders ───────────────────────────────────────────────────────
-function scoreboardUrl(league, from, to) {
+// HUOM: ESPN:n scoreboard-API ei enää tue päivävälejä (dates=alku-loppu
+// palauttaa HTTP 400) — vain yksittäinen päivä (dates=VVVVKKPP) toimii.
+function scoreboardUrl(league, date) {
     const base = `https://site.api.espn.com/apis/site/v2/sports/${league.sport}/${league.id}/scoreboard`;
-    return `${base}?dates=${toESPNDate(from)}-${toESPNDate(to)}&limit=100`;
+    return `${base}?dates=${toESPNDate(date)}&limit=100`;
 }
 function summaryUrl(league, eventId) {
     return `https://site.api.espn.com/apis/site/v2/sports/${league.sport}/${league.id}/summary?event=${eventId}`;
@@ -252,8 +254,8 @@ function nlaGameToESPN(game) {
 }
 
 // ── Scoreboard fetch ───────────────────────────────────────────────────────
-async function fetchMatches(league, from, to) {
-    const url = scoreboardUrl(league, from, to);
+async function fetchMatches(league, date) {
+    const url = scoreboardUrl(league, date);
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return (await res.json()).events || [];

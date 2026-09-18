@@ -71,17 +71,32 @@ async function fetchManUSchedule(upcoming) {
     let events;
 
     if (upcoming) {
-        // Scoreboard API: today → end of season, filter for Man United
+        // Scoreboard API: today → end of season, filter for Man United.
+        // HUOM: ESPN:n scoreboard-API ei enää tue päivävälejä (dates=alku-loppu
+        // palauttaa HTTP 400) — haetaan siksi kuukausi kerrallaan (dates=VVVVKK),
+        // joka toimii edelleen koko kuukauden otteluille.
         const from = new Date();
         from.setHours(0, 0, 0, 0);
         // PL-kausi päättyy toukokuussa; jos ollaan elo-joulukuussa, kausi päättyy seuraavana vuonna
         const seasonEndYear = from.getMonth() >= 6 ? from.getFullYear() + 1 : from.getFullYear();
-        const to = new Date(seasonEndYear, 4, 31);
-        const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=${toESPNDate(from)}-${toESPNDate(to)}&limit=200`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        events = (data.events || []).filter(e =>
+        const seasonEnd = new Date(seasonEndYear, 4, 31);
+
+        const months = [];
+        const cursor = new Date(from.getFullYear(), from.getMonth(), 1);
+        while (cursor <= seasonEnd) {
+            months.push(`${cursor.getFullYear()}${String(cursor.getMonth() + 1).padStart(2, '0')}`);
+            cursor.setMonth(cursor.getMonth() + 1);
+        }
+
+        const monthEvents = await Promise.all(months.map(async m => {
+            const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=${m}&limit=200`;
+            const res = await fetch(url);
+            if (!res.ok) return [];
+            const data = await res.json();
+            return data.events || [];
+        }));
+
+        events = monthEvents.flat().filter(e =>
             (e.competitions?.[0]?.competitors || []).some(
                 c => c.team?.displayName === 'Manchester United'
             )

@@ -44,6 +44,9 @@ function liigaCurrentSeason() {
 }
 
 // ── Hae päivän ottelut per liiga ───────────────────────────────────────────
+// HUOM: ESPN:n scoreboard-API ei enää tue päivävälejä (dates=alku-loppu
+// palauttaa HTTP 400, myös silloin kun alku ja loppu ovat sama päivä) —
+// vain yksittäinen päivä (dates=VVVVKKPP) toimii.
 async function fetchTodayESPN(league, date) {
     const base = `https://site.api.espn.com/apis/site/v2/sports/${league.sport}/${league.id}/scoreboard`;
 
@@ -52,8 +55,8 @@ async function fetchTodayESPN(league, date) {
         const prev = new Date(date);
         prev.setDate(prev.getDate() - 1);
         const [a, b] = await Promise.all([
-            apiFetch(`${base}?dates=${toDateStr(prev)}-${toDateStr(prev)}&limit=100`),
-            apiFetch(`${base}?dates=${toDateStr(date)}-${toDateStr(date)}&limit=100`),
+            apiFetch(`${base}?dates=${toDateStr(prev)}&limit=100`),
+            apiFetch(`${base}?dates=${toDateStr(date)}&limit=100`),
         ]);
         const dayStr = toDateStr(date);
         const seen   = new Set();
@@ -64,7 +67,7 @@ async function fetchTodayESPN(league, date) {
         });
     }
 
-    const data = await apiFetch(`${base}?dates=${toDateStr(date)}-${toDateStr(date)}&limit=100`);
+    const data = await apiFetch(`${base}?dates=${toDateStr(date)}&limit=100`);
     return data.events || [];
 }
 

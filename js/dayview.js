@@ -188,8 +188,8 @@ async function fetchDayEvents(league, date) {
             const prevDate = new Date(date);
             prevDate.setDate(prevDate.getDate() - 1);
             const [prev, today] = await Promise.all([
-                fetchMatches(league, prevDate, prevDate),
-                fetchMatches(league, date, date),
+                fetchMatches(league, prevDate),
+                fetchMatches(league, date),
             ]);
             const dayStr = toESPNDate(date);
             const seen = new Set();
@@ -216,7 +216,11 @@ async function fetchDayEvents(league, date) {
     const prevDate = new Date(date);
     prevDate.setDate(prevDate.getDate() - 1);
     const dayStr = toESPNDate(date);
-    const events = await fetchMatches(league, prevDate, date);
+    const [prevEvents, todayEvents] = await Promise.all([
+        fetchMatches(league, prevDate),
+        fetchMatches(league, date),
+    ]);
+    const events = [...prevEvents, ...todayEvents];
     const seen = new Set();
     return events.filter(ev => {
         if (seen.has(ev.id)) return false;
